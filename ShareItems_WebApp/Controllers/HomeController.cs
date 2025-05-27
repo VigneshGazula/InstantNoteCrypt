@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using ShareItems_WebApp.Entities;
 using ShareItems_WebApp.Services;
 
@@ -33,7 +36,8 @@ namespace ShareItems_WebApp.Controllers
         }
         public IActionResult AccessToItems(string Code)
         {
-            if (string.IsNullOrEmpty(Code)){
+            if (string.IsNullOrEmpty(Code))
+            {
                 return RedirectToAction("Index");
             }
             var entry = _userContext.UserCredentials.FirstOrDefault(x => x.code.Equals(Code));
@@ -69,13 +73,13 @@ namespace ShareItems_WebApp.Controllers
             return RedirectToAction("AccessToItems", new { Code = model.code });
         }
         [HttpPost]
-        public IActionResult CreateSecondaryLock(string Code,string Pin)
+        public IActionResult CreateSecondaryLock(string Code, string Pin)
         {
             var entry = _userContext.UserCredentials.FirstOrDefault(x => x.code.Equals(Code));
             entry.secondaryPassword = _encryptionService.EncryptData(Pin);
             _userContext.Update(entry);
             _userContext.SaveChanges();
-            return RedirectToAction("AccessToItems", new {Code});
+            return RedirectToAction("AccessToItems", new { Code });
         }
 
         public IActionResult VerifySecondaryPassword(string Code)
@@ -85,10 +89,10 @@ namespace ShareItems_WebApp.Controllers
             {
                 return RedirectToAction("AccessToItems", new { Code });
             }
-            return View("CheckSecondaryPassword",entry);
+            return View("CheckSecondaryPassword", entry);
         }
         [HttpPost]
-        public IActionResult CheckSecondaryPassword(string Code,string Pin)
+        public IActionResult CheckSecondaryPassword(string Code, string Pin)
         {
             var entry = _userContext.UserCredentials.FirstOrDefault(x => x.code.Equals(Code));
             string decryptedPin = _encryptionService.DecryptData(entry.secondaryPassword);
@@ -97,7 +101,7 @@ namespace ShareItems_WebApp.Controllers
                 return RedirectToAction("AccessToItems", new { Code });
             }
             ViewBag.Message = "Invalid Pin";
-            return View("CheckSecondaryPassword",entry);
+            return View("CheckSecondaryPassword", entry);
         }
         public IActionResult DeleteSecondaryPassword(string Code)
         {
@@ -129,5 +133,46 @@ namespace ShareItems_WebApp.Controllers
         {
             return RedirectToAction("Index");
         }
+
+        [HttpPost]
+        public IActionResult DownloadPdf(string Code)
+        {
+            QuestPDF.Settings.License = LicenseType.Community;
+            var entry = _userContext.UserCredentials.FirstOrDefault(x => x.code == Code);
+            string matter = _encryptionService.DecryptData(entry.matter);
+
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(14));
+
+                    page.Header()
+                        .Text(entry.code)
+                        .SemiBold().FontSize(22).FontColor(Colors.Blue.Medium);
+
+                    page.Content()
+                        .Column(column =>
+                        {
+                            column.Spacing(10);
+
+                            column.Item().Text(matter);
+                        });
+
+                    //page.Footer()
+                    //    .AlignCenter()
+                    //    .Text("Confidential - Internal Use Only").Italic().FontSize(10);
+                });
+            });
+
+            var pdfBytes = document.GeneratePdf();
+            string pdfName = entry.code + "_"+".pdf";
+            return File(pdfBytes, "application/pdf", pdfName);
+        }
+
+
     }
 }

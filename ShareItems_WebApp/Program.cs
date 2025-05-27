@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Rotativa.AspNetCore;
 using ShareItems_WebApp.Entities;
 using ShareItems_WebApp.Services;
 
@@ -10,6 +11,7 @@ builder.Services.AddDataProtection();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+var env = app.Services.GetRequiredService<IWebHostEnvironment>();
 
 app.UseRouting();
 app.UseStaticFiles();

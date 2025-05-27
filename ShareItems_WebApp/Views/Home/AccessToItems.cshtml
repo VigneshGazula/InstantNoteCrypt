@@ -71,7 +71,10 @@
                 </form>
                 <button class="close-btn" onclick="hidePinInput()">Close</button>
             </div>
-            <button class="side-button">Download PDF</button>
+            <form method="post" asp-action="DownloadPdf">
+                 <input type="hidden" name="Code" value="@Model.code" /> 
+                <button class="side-button" type="submit" >Download PDF</button>
+            </form>
             <form method="post" asp-action="OpenActivityLog">
                 <input type="hidden" name="Code" value="@Model.code" />
                 <button type="submit" class="side-button">Open Activity Log</button>
@@ -96,7 +99,7 @@
 
         <div class="side-buttons-right">
             <div class="side-button">Entire project is built in asp.net core.</div>
-            <div class="side-button">All the data is being encrypted, don’t worry.</div>
+            <div class="side-button">All the data is being encrypted, don't worry.</div>
         </div>
     </div>
 
