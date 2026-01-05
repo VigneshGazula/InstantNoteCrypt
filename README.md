@@ -1,100 +1,81 @@
-🔐 Instant Note Crypt
+# 🔐 Instant Note Crypt
 
 Instant Note Crypt is a lightweight, secure note-sharing web application inspired by platforms like CodedPad. It allows users to instantly create, store, and access notes using a unique code — without the need for accounts or authentication.
 
-🚀 Features
+---
 
-🔑 Code-Based Access
+## 🚀 Features
 
-Each note is identified by a unique code.
+- 🔑 **Code-Based Notes**
+  - Each note is identified by a unique code.
+  - Entering a new code creates an empty note.
+  - Re-entering the same code retrieves the saved content.
 
-Entering a new code creates a fresh empty note.
+- 📝 **Instant Editing**
+  - Write, edit, and save notes in real time.
+  - Notes are persistently stored and accessible anytime.
 
-Re-entering an existing code retrieves the stored content.
+- 🔐 **Secondary Lock (Optional)**
+  - Users can enable an additional **4-digit PIN** for security.
+  - PIN verification is required before accessing protected notes.
 
-📝 Instant Note Editing
+- 🧭 **Separate Views**
+  - Code entry screen
+  - Note editor screen
+  - PIN verification screen (if enabled)
 
-Write, update, and save text seamlessly.
+- ⚡ **Simple & Fast**
+  - No login or signup required.
+  - Minimal UI focused on usability and speed.
 
-Content is persisted and accessible anytime using the same code.
+---
 
-🔐 Secondary Lock (Optional)
+## 🛠️ Tech Stack
 
-Users can secure their note with an additional 4-digit PIN.
+- **Backend:** ASP.NET Core  
+- **Frontend:** Razor Pages / MVC Views  
+- **Database:** SQL Server  
+- **ORM:** Entity Framework Core  
 
-PIN protection adds an extra layer of privacy.
+---
 
-🧭 Separate Views
+## 🗃️ How It Works
 
-Dedicated views for:
+1. User enters a **code**
+2. System checks the database:
+   - If the code does not exist → a new empty note is created
+   - If the code exists → the saved note is loaded
+3. If a PIN is set:
+   - User must verify the PIN
+4. User edits the note
+5. Changes are saved and linked to the same code
 
-Code entry
+---
 
-Note editing
+## 🔒 Security Notes
 
-PIN verification (if enabled)
+- The 4-digit PIN is currently stored in **plain text** (development stage).
+- Planned security improvements:
+  - PIN hashing and encryption
+  - Secure access policies
+  - Expiry-based notes
 
-⚡ Minimal & Fast
+---
 
-No login, no signup.
+## 🚧 Future Enhancements
 
-Clean UI focused on speed and simplicity.
+- 🔐 Encrypted PIN storage
+- ⏳ Note expiration feature
+- 👁️ Read-only or shareable links
+- 🌙 Dark mode
+- 📱 Responsive mobile UI
+- 🕒 Version history for notes
 
-🛠️ Tech Stack
+---
 
-Backend: ASP.NET Core
+## 🏗️ Setup & Installation
 
-Frontend: Razor Pages / MVC Views
-
-Database: SQL Server
-
-ORM: Entity Framework Core
-
-🗃️ Project Workflow
-
-User enters a code
-
-System checks if the code exists:
-
-❌ Not found → Creates a new empty note
-
-✅ Found → Loads the existing note
-
-If PIN is enabled:
-
-User must enter the correct PIN to proceed
-
-User can write or update the note
-
-Content is saved and mapped to the same code
-
-🔒 Security Notes
-
-Currently, the 4-digit PIN is stored in plain text (development phase).
-
-Future enhancements include:
-
-PIN hashing & encryption
-
-Expiry-based notes
-
-Read-only sharing links
-
-🧩 Future Enhancements
-
-🔐 Encrypted PIN storage
-
-⏳ Auto-expiring notes
-
-👁️ Read-only / shareable links
-
-🌙 Dark mode
-
-📱 Mobile-friendly UI
-
-📜 Version history for notes
-
-🏗️ Setup & Installation
+```bash
 # Clone the repository
 git clone https://github.com/your-username/instant-note-crypt.git
 
@@ -104,22 +85,8 @@ cd instant-note-crypt
 # Restore dependencies
 dotnet restore
 
-# Apply migrations
+# Apply database migrations
 dotnet ef database update
 
 # Run the application
 dotnet run
-
-📄 License
-
-This project is open-source and available under the MIT License.
-
-🤝 Contribution
-
-Contributions are welcome!
-Feel free to fork the repository, open issues, or submit pull requests.
-
-✨ Author
-
-Vignesh Gazula
-ASP.NET Core Developer | Problem Solver | Builder
