@@ -2,8 +2,6 @@
 
 Instant Note Crypt is a lightweight, secure note-sharing web application inspired by platforms like CodedPad. It allows users to instantly create, store, and access notes using a unique code — without the need for accounts or authentication.
 
----
-
 ## 🚀 Features
 
 - 🔑 **Code-Based Notes**
@@ -28,16 +26,12 @@ Instant Note Crypt is a lightweight, secure note-sharing web application inspire
   - No login or signup required.
   - Minimal UI focused on usability and speed.
 
----
-
 ## 🛠️ Tech Stack
 
 - **Backend:** ASP.NET Core  
 - **Frontend:** Razor Pages / MVC Views  
 - **Database:** SQL Server  
 - **ORM:** Entity Framework Core  
-
----
 
 ## 🗃️ How It Works
 
@@ -50,8 +44,6 @@ Instant Note Crypt is a lightweight, secure note-sharing web application inspire
 4. User edits the note
 5. Changes are saved and linked to the same code
 
----
-
 ## 🔒 Security Notes
 
 - The 4-digit PIN is currently stored in **plain text** (development stage).
@@ -59,8 +51,6 @@ Instant Note Crypt is a lightweight, secure note-sharing web application inspire
   - PIN hashing and encryption
   - Secure access policies
   - Expiry-based notes
-
----
 
 ## 🚧 Future Enhancements
 
@@ -70,8 +60,6 @@ Instant Note Crypt is a lightweight, secure note-sharing web application inspire
 - 🌙 Dark mode
 - 📱 Responsive mobile UI
 - 🕒 Version history for notes
-
----
 
 ## 🏗️ Setup & Installation
 
