@@ -361,3 +361,10 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/API_USAGE_GUIDE.md
+/DATABASE_MIGRATION.md
+/EXAMPLE_FileUploadPage.cshtml
+/EXAMPLE_FileUploadPage.cshtml.cs
+/FILE_SYSTEM_README.md
+/IMPLEMENTATION_SUMMARY.md
+/render.yaml
