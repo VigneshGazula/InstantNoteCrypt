@@ -10,6 +10,6 @@ namespace ShareItems_WebApp.Services
         Task<NoteFile?> GetFileByIdAsync(int fileId);
         Task<bool> DeleteFileAsync(int fileId);
         Task<bool> DeleteAllNoteFilesAsync(int noteId);
-        string GetPhysicalPath(string filePath);
     }
 }
+

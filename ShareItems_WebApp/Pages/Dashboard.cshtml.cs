@@ -117,9 +117,26 @@ namespace ShareItems_WebApp.Pages
                 await _fileStorageService.SaveFileAsync(note.Id, file, detectedFileType, Code);
                 Message = $"File uploaded successfully as {detectedFileType}.";
             }
+            catch (TaskCanceledException)
+            {
+                ErrorMessage = "Upload timeout - the file is too large or your connection is too slow. Please try a smaller file.";
+            }
             catch (Exception ex)
             {
-                ErrorMessage = $"Upload failed: {ex.Message}";
+                // Check if it's a timeout-related exception
+                if (ex.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase) || 
+                    ex.Message.Contains("canceled", StringComparison.OrdinalIgnoreCase))
+                {
+                    ErrorMessage = "Upload timeout - please try with a smaller file or check your internet connection.";
+                }
+                else if (ex.Message.Contains("cloud storage", StringComparison.OrdinalIgnoreCase))
+                {
+                    ErrorMessage = "Failed to upload to cloud storage. Please try again later.";
+                }
+                else
+                {
+                    ErrorMessage = $"Upload failed: {ex.Message}";
+                }
             }
 
             return Page();
@@ -162,16 +179,9 @@ namespace ShareItems_WebApp.Pages
                 return Page();
             }
 
-            var physicalPath = _fileStorageService.GetPhysicalPath(file.FilePath);
-
-            if (!System.IO.File.Exists(physicalPath))
-            {
-                ErrorMessage = "File does not exist on disk.";
-                return Page();
-            }
-
-            var fileBytes = await System.IO.File.ReadAllBytesAsync(physicalPath);
-            return File(fileBytes, file.ContentType, file.FileName);
+            // Redirect to Cloudinary secure URL for download
+            // The file will be served directly from Cloudinary
+            return Redirect(file.FileUrl);
         }
 
         public async Task<IActionResult> OnPostSetPinAsync(string pin, string confirmPin)

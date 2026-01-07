@@ -98,17 +98,9 @@ namespace ShareItems_WebApp.Controllers
                     }
                 }
 
-                // Get physical file path
-                var physicalPath = _fileStorageService.GetPhysicalPath(noteFile.FilePath);
-                if (!System.IO.File.Exists(physicalPath))
-                {
-                    _logger.LogError($"File not found on disk: {physicalPath}");
-                    return NotFound("File not found on disk");
-                }
-
-                // Return file
-                var fileBytes = await System.IO.File.ReadAllBytesAsync(physicalPath);
-                return File(fileBytes, noteFile.ContentType, noteFile.FileName);
+                // Redirect to Cloudinary URL for file download
+                // Files are served directly from Cloudinary
+                return Redirect(noteFile.FileUrl);
             }
             catch (Exception ex)
             {
@@ -157,6 +149,7 @@ namespace ShareItems_WebApp.Controllers
                     fileType = f.FileType,
                     fileSize = f.FileSize,
                     contentType = f.ContentType,
+                    fileUrl = f.FileUrl,
                     uploadedAt = f.UploadedAt
                 }));
             }

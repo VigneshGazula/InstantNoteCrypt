@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Rotativa.AspNetCore;
 using ShareItems_WebApp.Entities;
 using ShareItems_WebApp.Services;
+using ShareItems_WebApp.Settings;
 using SixLabors.ImageSharp;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,9 +11,14 @@ var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION")
                        ?? builder.Configuration.GetConnectionString("DefaultConnectionString");
 builder.Services.AddDbContext<UserContext>(options => options.UseSqlServer(connectionString));
 
+// Configure Cloudinary settings
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+
 // Register services
 builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<INoteService, NoteService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 builder.Services.AddDataProtection();
@@ -22,12 +28,7 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 var env = app.Services.GetRequiredService<IWebHostEnvironment>();
 
-// Ensure uploads directory exists
-var uploadsPath = Path.Combine(env.WebRootPath, "uploads");
-if (!Directory.Exists(uploadsPath))
-{
-    Directory.CreateDirectory(uploadsPath);
-}
+// Note: No longer need to create uploads directory since we're using Cloudinary
 
 app.UseRouting();
 app.UseStaticFiles();
@@ -40,3 +41,4 @@ app.MapControllerRoute(
     
 
 app.Run();
+

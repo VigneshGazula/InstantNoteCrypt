@@ -1,130 +1,160 @@
 using Microsoft.EntityFrameworkCore;
 using ShareItems_WebApp.Entities;
+using ShareItems_WebApp.Helpers;
 
 namespace ShareItems_WebApp.Services
 {
+    /// <summary>
+    /// File storage service using Cloudinary as the storage backend
+    /// </summary>
     public class FileStorageService : IFileStorageService
     {
         private readonly UserContext _context;
-        private readonly IWebHostEnvironment _environment;
+        private readonly ICloudinaryService _cloudinaryService;
         private readonly ILogger<FileStorageService> _logger;
-        private const long MaxFileSize = 50 * 1024 * 1024; // 50MB
 
-        private static readonly Dictionary<string, string[]> AllowedFileTypes = new()
-        {
-            { "document", new[] { ".pdf", ".doc", ".docx" } },
-            { "image", new[] { ".jpg", ".jpeg", ".png", ".webp" } },
-            { "video", new[] { ".mp4", ".mov" } }
-        };
-
-        private static readonly Dictionary<string, string[]> AllowedMimeTypes = new()
-        {
-            { "document", new[] { "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" } },
-            { "image", new[] { "image/jpeg", "image/png", "image/webp" } },
-            { "video", new[] { "video/mp4", "video/quicktime" } }
-        };
-
-        public FileStorageService(UserContext context, IWebHostEnvironment environment, ILogger<FileStorageService> logger)
+        public FileStorageService(
+            UserContext context,
+            ICloudinaryService cloudinaryService,
+            ILogger<FileStorageService> logger)
         {
             _context = context;
-            _environment = environment;
+            _cloudinaryService = cloudinaryService;
             _logger = logger;
         }
 
         public async Task<NoteFile> SaveFileAsync(int noteId, IFormFile file, string fileType, string code)
         {
-            // Validate file
+            // Input validation
             if (file == null || file.Length == 0)
             {
-                throw new ArgumentException("File is empty or null");
+                throw new ArgumentException("File is empty or null", nameof(file));
             }
 
-            if (file.Length > MaxFileSize)
+            if (string.IsNullOrWhiteSpace(code))
             {
-                throw new ArgumentException($"File size exceeds maximum allowed size of {MaxFileSize / (1024 * 1024)}MB");
+                throw new ArgumentException("Code cannot be empty", nameof(code));
             }
 
-            // Validate file type
-            if (!AllowedFileTypes.ContainsKey(fileType.ToLower()))
+            if (string.IsNullOrWhiteSpace(fileType))
             {
-                throw new ArgumentException($"Invalid file type: {fileType}");
+                throw new ArgumentException("File type cannot be empty", nameof(fileType));
             }
 
-            var extension = Path.GetExtension(file.FileName).ToLower();
-            if (!AllowedFileTypes[fileType.ToLower()].Contains(extension))
+            if (noteId <= 0)
             {
-                throw new ArgumentException($"File extension {extension} is not allowed for {fileType}");
+                throw new ArgumentException("Invalid note ID", nameof(noteId));
             }
 
-            // Validate MIME type
-            if (!AllowedMimeTypes[fileType.ToLower()].Contains(file.ContentType.ToLower()))
+            // Validate file size
+            if (!FileValidationHelper.IsValidFileSize(file.Length))
             {
-                throw new ArgumentException($"MIME type {file.ContentType} is not allowed for {fileType}");
+                throw new InvalidOperationException(
+                    $"File size exceeds maximum allowed size of {FileValidationHelper.GetFileSizeString(FileValidationHelper.MaxFileSize)}");
             }
 
-            // Verify note exists
-            var note = await _context.Notes.FindAsync(noteId);
-            if (note == null)
+            // Validate file extension
+            var extension = Path.GetExtension(file.FileName)?.ToLower();
+            
+            if (string.IsNullOrEmpty(extension))
             {
-                throw new ArgumentException($"Note with ID {noteId} not found");
+                throw new InvalidOperationException("File must have an extension");
             }
-
-            // Create directory structure: wwwroot/uploads/{code}/
-            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", code);
-            if (!Directory.Exists(uploadsPath))
+            
+            // Check if extension is blocked
+            if (FileValidationHelper.ForbiddenExtensions.Contains(extension))
             {
-                Directory.CreateDirectory(uploadsPath);
+                throw new InvalidOperationException(
+                    $"File extension '{extension}' is not allowed for security reasons");
             }
 
-            // Generate unique filename
-            var storedFileName = $"{Guid.NewGuid()}{extension}";
-            var fullPath = Path.Combine(uploadsPath, storedFileName);
+            // Validate extension matches file type
+            if (!FileValidationHelper.IsValidExtension(extension, fileType))
+            {
+                throw new InvalidOperationException(
+                    $"File extension '{extension}' is not valid for file type '{fileType}'");
+            }
 
-            // Save file to disk
+            _logger.LogInformation(
+                "Uploading file to Cloudinary. FileName: {FileName}, FileType: {FileType}, Size: {Size} bytes, NoteId: {NoteId}",
+                file.FileName, fileType, file.Length, noteId);
+
+            // Upload to Cloudinary
+            CloudinaryUploadResult? uploadResult = null;
             try
             {
-                using (var stream = new FileStream(fullPath, FileMode.Create))
+                uploadResult = await _cloudinaryService.UploadFileAsync(file, code, fileType);
+                
+                if (uploadResult == null)
                 {
-                    await file.CopyToAsync(stream);
+                    throw new Exception("Cloudinary upload returned null result");
+                }
+
+                if (string.IsNullOrWhiteSpace(uploadResult.SecureUrl))
+                {
+                    throw new Exception("Cloudinary upload did not return a valid URL");
+                }
+
+                if (string.IsNullOrWhiteSpace(uploadResult.PublicId))
+                {
+                    throw new Exception("Cloudinary upload did not return a valid PublicId");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving file to disk");
-                throw new Exception("Failed to save file to disk", ex);
+                _logger.LogError(ex, "Failed to upload file to Cloudinary. FileName: {FileName}", file.FileName);
+                throw new Exception("Failed to upload file to cloud storage", ex);
             }
 
-            // Create metadata record
+            // Create database record
             var noteFile = new NoteFile
             {
                 NoteId = noteId,
                 FileName = file.FileName,
-                StoredFileName = storedFileName,
+                StoredFileName = Path.GetFileName(uploadResult.PublicId) ?? Guid.NewGuid().ToString(),
                 FileType = fileType.ToLower(),
-                ContentType = file.ContentType,
+                ContentType = file.ContentType ?? "application/octet-stream",
                 FileSize = file.Length,
-                FilePath = $"uploads/{code}/{storedFileName}",
+                FileUrl = uploadResult.SecureUrl,
+                PublicId = uploadResult.PublicId,
+                FilePath = null, // Explicitly set to null for Cloudinary storage
                 UploadedAt = DateTime.UtcNow
             };
 
-            // Save to database
+            // Save to database with retry logic
             try
             {
                 _context.NoteFiles.Add(noteFile);
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation(
+                    "File metadata saved to database. FileId: {FileId}, PublicId: {PublicId}, FileUrl: {FileUrl}",
+                    noteFile.Id, noteFile.PublicId, noteFile.FileUrl);
+
+                return noteFile;
             }
             catch (Exception ex)
             {
-                // Rollback: delete file from disk if database save fails
-                if (File.Exists(fullPath))
-                {
-                    File.Delete(fullPath);
-                }
-                _logger.LogError(ex, "Error saving file metadata to database");
-                throw new Exception("Failed to save file metadata", ex);
-            }
+                // Rollback: delete file from Cloudinary if database save fails
+                _logger.LogError(ex, 
+                    "Error saving file metadata to database. Attempting rollback... PublicId: {PublicId}", 
+                    uploadResult.PublicId);
 
-            return noteFile;
+                try
+                {
+                    var resourceType = DetermineResourceType(fileType);
+                    await _cloudinaryService.DeleteFileAsync(uploadResult.PublicId, resourceType);
+                    _logger.LogInformation("Successfully rolled back Cloudinary upload. PublicId: {PublicId}", uploadResult.PublicId);
+                }
+                catch (Exception rollbackEx)
+                {
+                    _logger.LogError(rollbackEx, 
+                        "Failed to rollback Cloudinary upload. File may remain orphaned. PublicId: {PublicId}", 
+                        uploadResult.PublicId);
+                }
+
+                throw new Exception("Failed to save file metadata. Upload has been rolled back.", ex);
+            }
         }
 
         public async Task<IEnumerable<NoteFile>> GetFilesByNoteIdAsync(int noteId)
@@ -155,63 +185,129 @@ namespace ShareItems_WebApp.Services
             var noteFile = await _context.NoteFiles.FindAsync(fileId);
             if (noteFile == null)
             {
+                _logger.LogWarning("Attempted to delete non-existent file. FileId: {FileId}", fileId);
                 return false;
             }
 
-            // Delete from disk
-            var fullPath = GetPhysicalPath(noteFile.FilePath);
-            if (File.Exists(fullPath))
+            // Determine resource type for Cloudinary
+            var resourceType = DetermineResourceType(noteFile.FileType);
+
+            // Delete from Cloudinary
+            var cloudinaryDeleted = await _cloudinaryService.DeleteFileAsync(noteFile.PublicId, resourceType);
+
+            if (!cloudinaryDeleted)
             {
-                try
-                {
-                    File.Delete(fullPath);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"Failed to delete file from disk: {fullPath}");
-                }
+                _logger.LogWarning(
+                    "Failed to delete file from Cloudinary, but continuing with database deletion. PublicId: {PublicId}",
+                    noteFile.PublicId);
             }
 
             // Delete from database
             _context.NoteFiles.Remove(noteFile);
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("File deleted successfully. FileId: {FileId}, PublicId: {PublicId}",
+                fileId, noteFile.PublicId);
+
             return true;
         }
 
         public async Task<bool> DeleteAllNoteFilesAsync(int noteId)
         {
+            if (noteId <= 0)
+            {
+                throw new ArgumentException("Invalid note ID", nameof(noteId));
+            }
+
             var files = await _context.NoteFiles
                 .Where(nf => nf.NoteId == noteId)
                 .ToListAsync();
 
+            if (!files.Any())
+            {
+                _logger.LogInformation("No files to delete for NoteId: {NoteId}", noteId);
+                return true;
+            }
+
+            _logger.LogInformation("Deleting {Count} files for NoteId: {NoteId}", files.Count, noteId);
+
+            var deletionErrors = new List<string>();
+
+            // Delete each file from Cloudinary
             foreach (var file in files)
             {
-                // Delete from disk
-                var fullPath = GetPhysicalPath(file.FilePath);
-                if (File.Exists(fullPath))
+                try
                 {
-                    try
+                    if (!string.IsNullOrWhiteSpace(file.PublicId))
                     {
-                        File.Delete(fullPath);
+                        var resourceType = DetermineResourceType(file.FileType);
+                        var deleted = await _cloudinaryService.DeleteFileAsync(file.PublicId, resourceType);
+                        
+                        if (!deleted)
+                        {
+                            _logger.LogWarning(
+                                "Failed to delete file from Cloudinary. FileId: {FileId}, PublicId: {PublicId}", 
+                                file.Id, file.PublicId);
+                            deletionErrors.Add($"FileId {file.Id}: {file.PublicId}");
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _logger.LogWarning(ex, $"Failed to delete file from disk: {fullPath}");
+                        _logger.LogWarning(
+                            "File has no PublicId, skipping Cloudinary deletion. FileId: {FileId}", 
+                            file.Id);
                     }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, 
+                        "Error deleting file from Cloudinary. FileId: {FileId}, PublicId: {PublicId}", 
+                        file.Id, file.PublicId);
+                    deletionErrors.Add($"FileId {file.Id}: {ex.Message}");
                 }
             }
 
-            // Delete from database
-            _context.NoteFiles.RemoveRange(files);
-            await _context.SaveChangesAsync();
+            // Delete all from database regardless of Cloudinary deletion success
+            try
+            {
+                _context.NoteFiles.RemoveRange(files);
+                await _context.SaveChangesAsync();
 
-            return true;
+                _logger.LogInformation(
+                    "All file records deleted from database for NoteId: {NoteId}. Cloudinary deletion errors: {ErrorCount}",
+                    noteId, deletionErrors.Count);
+
+                if (deletionErrors.Any())
+                {
+                    _logger.LogWarning(
+                        "Some files could not be deleted from Cloudinary: {Errors}",
+                        string.Join("; ", deletionErrors));
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete file records from database for NoteId: {NoteId}", noteId);
+                throw;
+            }
         }
 
-        public string GetPhysicalPath(string filePath)
+        #region Private Helper Methods
+
+        /// <summary>
+        /// Determines Cloudinary resource type based on file category
+        /// </summary>
+        private static string DetermineResourceType(string fileType)
         {
-            return Path.Combine(_environment.WebRootPath, filePath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+            return fileType?.ToLower() switch
+            {
+                "image" => "image",
+                "video" => "video",
+                _ => "raw" // documents and others use raw type
+            };
         }
+
+        #endregion
     }
 }

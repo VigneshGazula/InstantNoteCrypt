@@ -21,7 +21,7 @@ namespace ShareItems_WebApp.Entities
 
         [Required]
         [MaxLength(50)]
-        public string FileType { get; set; } = string.Empty; // "document", "image", "video"
+        public string FileType { get; set; } = string.Empty; // "document", "image", "video", "others"
 
         [Required]
         [MaxLength(100)]
@@ -29,9 +29,25 @@ namespace ShareItems_WebApp.Entities
 
         public long FileSize { get; set; }
 
+        /// <summary>
+        /// Cloudinary secure URL for accessing the file
+        /// </summary>
+        [Required]
+        [MaxLength(1000)]
+        public string FileUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Cloudinary public ID for managing the file (delete, transform, etc.)
+        /// </summary>
         [Required]
         [MaxLength(500)]
-        public string FilePath { get; set; } = string.Empty;
+        public string PublicId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Legacy field - kept for backward compatibility (can be removed in future migration)
+        /// </summary>
+        [MaxLength(500)]
+        public string? FilePath { get; set; }
 
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 
@@ -40,3 +56,4 @@ namespace ShareItems_WebApp.Entities
         public Note Note { get; set; } = null!;
     }
 }
+
