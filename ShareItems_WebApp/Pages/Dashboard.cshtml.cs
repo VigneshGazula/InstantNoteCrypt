@@ -20,13 +20,15 @@ namespace ShareItems_WebApp.Pages
         [BindProperty(SupportsGet = true)]
         public string Code { get; set; } = string.Empty;
 
+        [BindProperty]
+        public string? CurrentFileType { get; set; }
+
         public string? NoteContent { get; set; }
         public int NoteId { get; set; }
         public bool HasPin { get; set; }
         public IEnumerable<NoteFile>? Files { get; set; }
         public string? Message { get; set; }
         public string? ErrorMessage { get; set; }
-        public string? CurrentFileType { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -381,5 +383,47 @@ namespace ShareItems_WebApp.Pages
                 return Page();
             }
         }
+
+        public async Task<IActionResult> OnPostDeleteFileAsync(int fileId)
+        {
+            var note = await _noteService.GetNoteByCodeAsync(Code);
+
+            if (note == null)
+            {
+                ErrorMessage = "Note not found.";
+                return Page();
+            }
+
+            NoteId = note.Id;
+            NoteContent = note.Content;
+            HasPin = !string.IsNullOrWhiteSpace(note.Pin);
+
+            try
+            {
+                var deleted = await _fileStorageService.DeleteFileAsync(fileId);
+
+                if (deleted)
+                {
+                    Message = "File deleted successfully.";
+                }
+                else
+                {
+                    ErrorMessage = "Failed to delete file.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to delete file: {ex.Message}";
+            }
+
+            // Reload files to refresh the list
+            if (!string.IsNullOrWhiteSpace(CurrentFileType))
+            {
+                Files = await _fileStorageService.GetFilesByNoteIdAndTypeAsync(note.Id, CurrentFileType);
+            }
+
+            return Page();
+        }
     }
 }
+
