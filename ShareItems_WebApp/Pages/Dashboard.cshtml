@@ -77,11 +77,17 @@
         <!-- Notes Tab -->
         <div id="tab-notes" class="tab-content active">
             <div class="content-section">
-                <h3 class="section-title">Note Content</h3>
+                <h3 class="section-title">?? Note Content</h3>
+                <p class="section-description">Write your encrypted note. All content is stored securely.</p>
                 <form method="post" asp-page-handler="SaveNote" class="note-form">
-                    <textarea name="content" class="note-textarea" rows="15" placeholder="Write your encrypted note here...">@Model.NoteContent</textarea>
+                    <div class="note-editor">
+                        <textarea name="content" class="note-textarea" rows="20" placeholder="Start writing your encrypted note here...&#10;&#10;• All content is encrypted&#10;• Auto-saved on submit&#10;• Accessible only with your code">@Model.NoteContent</textarea>
+                        <div class="note-footer">
+                            <span class="char-count">@(Model.NoteContent?.Length ?? 0) characters</span>
+                        </div>
+                    </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">
+                        <button type="submit" class="btn-save-note">
                             <span class="btn-icon">??</span>
                             <span>Save Note</span>
                         </button>
@@ -93,31 +99,37 @@
         <!-- Documents Tab -->
         <div id="tab-documents" class="tab-content">
             <div class="content-section">
-                <h3 class="section-title">Upload Document</h3>
-                <div class="upload-info">
-                    <p class="info-text">
-                        <strong>Supported:</strong> PDF, DOC, DOCX, TXT, RTF, ODT, PPT, PPTX, XLS, XLSX, CSV, MD, JSON, XML, YAML
-                    </p>
-                </div>
-                <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
-                    <div class="file-input-wrapper">
-                        <input type="file" id="file-doc" name="file" class="file-input" required />
-                        <label for="file-doc" class="file-label">
-                            <span class="file-icon">??</span>
-                            <span class="file-text">Choose Document</span>
-                        </label>
+                <h3 class="section-title">?? Upload Document</h3>
+                <div class="upload-card">
+                    <div class="upload-info">
+                        <p class="info-text">
+                            <strong>Supported formats:</strong> PDF, DOC, DOCX, TXT, RTF, ODT, PPT, PPTX, XLS, XLSX, CSV, MD, JSON, XML, YAML
+                        </p>
                     </div>
-                    <button type="submit" class="btn-primary">
-                        <span class="btn-icon">??</span>
-                        <span>Upload Document</span>
-                    </button>
-                </form>
+                    <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
+                        <div class="file-input-group">
+                            <label class="file-input-label">
+                                <input type="file" id="file-doc" name="file" class="file-input" required />
+                                <div class="file-input-display">
+                                    <span class="file-icon">??</span>
+                                    <span class="file-text">Choose Document File</span>
+                                    <span class="file-hint">or drag and drop</span>
+                                </div>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn-upload">
+                            <span class="btn-icon">??</span>
+                            <span>Upload Document</span>
+                        </button>
+                    </form>
+                </div>
                 
-                <div class="files-list-container">
+                <div class="files-section">
                     <form method="post" asp-page-handler="LoadFiles" style="display: inline;">
                         <input type="hidden" name="fileType" value="document" />
-                        <button type="submit" class="btn-secondary btn-load">
-                            <span>?? Load Documents</span>
+                        <button type="submit" class="btn-load-files">
+                            <span class="btn-icon">??</span>
+                            <span>Load Documents</span>
                         </button>
                     </form>
                     
@@ -132,31 +144,37 @@
         <!-- Photos Tab -->
         <div id="tab-photos" class="tab-content">
             <div class="content-section">
-                <h3 class="section-title">Upload Photo</h3>
-                <div class="upload-info">
-                    <p class="info-text">
-                        <strong>Supported:</strong> JPG, JPEG, PNG, WEBP, GIF, BMP, TIFF, SVG, ICO, HEIC
-                    </p>
-                </div>
-                <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
-                    <div class="file-input-wrapper">
-                        <input type="file" id="file-img" name="file" class="file-input" accept="image/*" required />
-                        <label for="file-img" class="file-label">
-                            <span class="file-icon">???</span>
-                            <span class="file-text">Choose Photo</span>
-                        </label>
+                <h3 class="section-title">??? Upload Photo</h3>
+                <div class="upload-card">
+                    <div class="upload-info">
+                        <p class="info-text">
+                            <strong>Supported formats:</strong> JPG, JPEG, PNG, WEBP, GIF, BMP, TIFF, SVG, ICO, HEIC
+                        </p>
                     </div>
-                    <button type="submit" class="btn-primary">
-                        <span class="btn-icon">??</span>
-                        <span>Upload Photo</span>
-                    </button>
-                </form>
+                    <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
+                        <div class="file-input-group">
+                            <label class="file-input-label">
+                                <input type="file" id="file-img" name="file" class="file-input" accept="image/*" required />
+                                <div class="file-input-display">
+                                    <span class="file-icon">???</span>
+                                    <span class="file-text">Choose Photo File</span>
+                                    <span class="file-hint">or drag and drop</span>
+                                </div>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn-upload">
+                            <span class="btn-icon">??</span>
+                            <span>Upload Photo</span>
+                        </button>
+                    </form>
+                </div>
                 
-                <div class="files-list-container">
+                <div class="files-section">
                     <form method="post" asp-page-handler="LoadFiles" style="display: inline;">
                         <input type="hidden" name="fileType" value="image" />
-                        <button type="submit" class="btn-secondary btn-load">
-                            <span>?? Load Photos</span>
+                        <button type="submit" class="btn-load-files">
+                            <span class="btn-icon">??</span>
+                            <span>Load Photos</span>
                         </button>
                     </form>
                     
@@ -171,31 +189,37 @@
         <!-- Videos Tab -->
         <div id="tab-videos" class="tab-content">
             <div class="content-section">
-                <h3 class="section-title">Upload Video</h3>
-                <div class="upload-info">
-                    <p class="info-text">
-                        <strong>Supported:</strong> MP4, MOV, MKV, WEBM, AVI, WMV, FLV, M4V, 3GP
-                    </p>
-                </div>
-                <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
-                    <div class="file-input-wrapper">
-                        <input type="file" id="file-vid" name="file" class="file-input" accept="video/*" required />
-                        <label for="file-vid" class="file-label">
-                            <span class="file-icon">??</span>
-                            <span class="file-text">Choose Video</span>
-                        </label>
+                <h3 class="section-title">?? Upload Video</h3>
+                <div class="upload-card">
+                    <div class="upload-info">
+                        <p class="info-text">
+                            <strong>Supported formats:</strong> MP4, MOV, MKV, WEBM, AVI, WMV, FLV, M4V, 3GP
+                        </p>
                     </div>
-                    <button type="submit" class="btn-primary">
-                        <span class="btn-icon">??</span>
-                        <span>Upload Video</span>
-                    </button>
-                </form>
+                    <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
+                        <div class="file-input-group">
+                            <label class="file-input-label">
+                                <input type="file" id="file-vid" name="file" class="file-input" accept="video/*" required />
+                                <div class="file-input-display">
+                                    <span class="file-icon">??</span>
+                                    <span class="file-text">Choose Video File</span>
+                                    <span class="file-hint">or drag and drop</span>
+                                </div>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn-upload">
+                            <span class="btn-icon">??</span>
+                            <span>Upload Video</span>
+                        </button>
+                    </form>
+                </div>
                 
-                <div class="files-list-container">
+                <div class="files-section">
                     <form method="post" asp-page-handler="LoadFiles" style="display: inline;">
                         <input type="hidden" name="fileType" value="video" />
-                        <button type="submit" class="btn-secondary btn-load">
-                            <span>?? Load Videos</span>
+                        <button type="submit" class="btn-load-files">
+                            <span class="btn-icon">??</span>
+                            <span>Load Videos</span>
                         </button>
                     </form>
                     
@@ -210,34 +234,41 @@
         <!-- Others Tab -->
         <div id="tab-others" class="tab-content">
             <div class="content-section">
-                <h3 class="section-title">Upload Other Files</h3>
-                <div class="upload-info">
-                    <p class="info-text">
-                        <strong>Supported:</strong> ZIP, RAR, 7Z, TAR, GZ, PSD, AI, Figma, Blend, OBJ, STL, LOG, DAT
-                    </p>
-                    <p class="warning-text">
-                        <strong>?? Not Allowed:</strong> Executable files (EXE, BAT, CMD, SH, PS1, JS, VBS, JAR, PHP, PY, RB)
-                    </p>
-                </div>
-                <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
-                    <div class="file-input-wrapper">
-                        <input type="file" id="file-other" name="file" class="file-input" required />
-                        <label for="file-other" class="file-label">
-                            <span class="file-icon">??</span>
-                            <span class="file-text">Choose File</span>
-                        </label>
+                <h3 class="section-title">?? Upload Other Files</h3>
+                <div class="upload-card">
+                    <div class="upload-info">
+                        <p class="info-text">
+                            <strong>Supported formats:</strong> ZIP, RAR, 7Z, TAR, GZ, PSD, AI, Figma, Blend, OBJ, STL, LOG, DAT
+                        </p>
+                        <p class="warning-text">
+                            <span class="warning-icon">??</span>
+                            <strong>Not allowed:</strong> Executable files (EXE, BAT, CMD, SH, PS1, JS, VBS, JAR, PHP, PY, RB)
+                        </p>
                     </div>
-                    <button type="submit" class="btn-primary">
-                        <span class="btn-icon">??</span>
-                        <span>Upload File</span>
-                    </button>
-                </form>
+                    <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
+                        <div class="file-input-group">
+                            <label class="file-input-label">
+                                <input type="file" id="file-other" name="file" class="file-input" required />
+                                <div class="file-input-display">
+                                    <span class="file-icon">??</span>
+                                    <span class="file-text">Choose File</span>
+                                    <span class="file-hint">or drag and drop</span>
+                                </div>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn-upload">
+                            <span class="btn-icon">??</span>
+                            <span>Upload File</span>
+                        </button>
+                    </form>
+                </div>
                 
-                <div class="files-list-container">
+                <div class="files-section">
                     <form method="post" asp-page-handler="LoadFiles" style="display: inline;">
                         <input type="hidden" name="fileType" value="others" />
-                        <button type="submit" class="btn-secondary btn-load">
-                            <span>?? Load Other Files</span>
+                        <button type="submit" class="btn-load-files">
+                            <span class="btn-icon">??</span>
+                            <span>Load Other Files</span>
                         </button>
                     </form>
                     
@@ -665,29 +696,95 @@
     margin-top: 1rem;
 }
 
+.section-description {
+    color: #9ca3af;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Note Editor Styling */
+.note-editor {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.note-editor:focus-within {
+    border-color: #7c7cff;
+    box-shadow: 0 0 0 3px rgba(124, 124, 255, 0.15);
+}
+
 .note-textarea {
     width: 100%;
-    min-height: 400px;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 12px;
+    min-height: 500px;
+    padding: 1.5rem;
+    background: transparent;
+    border: none;
     color: #e5e7eb;
     font-size: 1rem;
-    font-family: 'Courier New', monospace;
+    line-height: 1.7;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     resize: vertical;
     transition: all 0.3s ease;
 }
 
 .note-textarea:focus {
     outline: none;
-    border-color: #7c7cff;
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 0 0 3px rgba(124, 124, 255, 0.15);
 }
 
 .note-textarea::placeholder {
     color: #9ca3af;
+    line-height: 1.7;
+}
+
+.note-footer {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.char-count {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    font-family: 'Courier New', monospace;
+}
+
+.btn-save-note {
+    margin-top: 1.5rem;
+    padding: 1rem 2rem;
+    background: #7c7cff;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(124, 124, 255, 0.35);
+    font-family: inherit;
+}
+
+.btn-save-note:hover {
+    background: #9d9dff;
+    box-shadow: 0 6px 20px rgba(124, 124, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.btn-save-note:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 12px rgba(124, 124, 255, 0.35);
+}
+
+.btn-save-note .btn-icon {
+    font-size: 1.3rem;
 }
 
 .form-group {
@@ -725,58 +822,176 @@
 }
 
 /* File Upload */
+.upload-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
 .upload-info {
     margin-bottom: 1.5rem;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
+    border-radius: 12px;
 }
 
 .info-text {
     color: #9ca3af;
     font-size: 0.9rem;
     margin: 0;
+    line-height: 1.6;
 }
 
 .info-text strong {
     color: #e5e7eb;
+    font-weight: 600;
 }
 
 .warning-text {
     color: #ef4444;
     font-size: 0.9rem;
-    margin: 0.5rem 0 0 0;
+    margin: 0.75rem 0 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.file-input-wrapper {
-    margin-bottom: 1rem;
+.warning-text strong {
+    font-weight: 600;
+}
+
+.warning-icon {
+    font-size: 1rem;
+}
+
+.file-input-group {
+    margin-bottom: 1.5rem;
 }
 
 .file-input {
     display: none;
 }
 
-.file-label {
-    display: inline-flex;
+.file-input-label {
+    display: block;
+    cursor: pointer;
+}
+
+.file-input-display {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.06);
+    justify-content: center;
+    padding: 3rem 2rem;
+    background: rgba(255, 255, 255, 0.04);
     border: 2px dashed rgba(255, 255, 255, 0.12);
     border-radius: 12px;
-    color: #e5e7eb;
-    cursor: pointer;
     transition: all 0.3s ease;
 }
 
-.file-label:hover {
-    background: rgba(255, 255, 255, 0.08);
+.file-input-display:hover {
+    background: rgba(255, 255, 255, 0.06);
     border-color: #7c7cff;
+    box-shadow: 0 0 20px rgba(124, 124, 255, 0.15);
 }
 
-.file-icon {
-    font-size: 1.5rem;
+.file-input:focus + .file-input-display {
+    border-color: #7c7cff;
+    box-shadow: 0 0 0 3px rgba(124, 124, 255, 0.15);
+}
+
+.file-input-display .file-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    filter: grayscale(0.3);
+}
+
+.file-input-display .file-text {
+    color: #e5e7eb;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.file-input-display .file-hint {
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+
+.file-input-display:hover .file-text {
+    color: #7c7cff;
+}
+
+.btn-upload {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: #7c7cff;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(124, 124, 255, 0.35);
+    font-family: inherit;
+}
+
+.btn-upload:hover {
+    background: #9d9dff;
+    box-shadow: 0 6px 20px rgba(124, 124, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.btn-upload:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 12px rgba(124, 124, 255, 0.35);
+}
+
+.btn-upload .btn-icon {
+    font-size: 1.3rem;
+}
+
+.files-section {
+    margin-top: 2rem;
+}
+
+.btn-load-files {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e5e7eb;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+    font-family: inherit;
+}
+
+.btn-load-files:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-load-files .btn-icon {
+    font-size: 1.2rem;
 }
 
 /* Buttons */
@@ -829,12 +1044,6 @@
     background: #dc2626;
     box-shadow: 0 6px 16px rgba(239, 68, 68, 0.45);
     transform: translateY(-2px);
-}
-
-.btn-load {
-    width: 100%;
-    margin-bottom: 1.5rem;
-    justify-content: center;
 }
 
 .form-actions {
@@ -913,8 +1122,6 @@
 .files-list-container {
     margin-top: 2rem;
 }
-
-/* Preview Modal */
 .preview-modal {
     display: none;
     position: fixed;
@@ -1020,6 +1227,33 @@
     .modal-content {
         padding: 1.5rem;
         width: 95%;
+    }
+    
+    .note-textarea {
+        min-height: 350px;
+        padding: 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .note-footer {
+        padding: 0.6rem 1rem;
+    }
+    
+    .btn-save-note {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .file-input-display {
+        padding: 2rem 1.5rem;
+    }
+    
+    .file-input-display .file-icon {
+        font-size: 2.5rem;
+    }
+    
+    .btn-upload {
+        padding: 0.875rem 1.25rem;
     }
 }
 </style>
