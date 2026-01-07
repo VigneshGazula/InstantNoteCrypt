@@ -1,27 +1,307 @@
 @page
 @model ShareItems_WebApp.Pages.IndexModel
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "CodeSafe - Secure Note Access";
 }
 
-<h1>Instant Note Crypt</h1>
+<div class="index-container">
+    <div class="index-glass-card">
+        <!-- App Branding -->
+        <div class="index-header">
+            <h1 class="index-title">CodeSafe</h1>
+            <p class="index-subtitle">Secure. Simple. Encrypted.</p>
+        </div>
 
-@if (!string.IsNullOrEmpty(Model.Message))
-{
-    <p style="color: green;">@Model.Message</p>
-}
+        <!-- Messages -->
+        @if (!string.IsNullOrEmpty(Model.Message))
+        {
+            <div class="index-message success">
+                <span>?</span> @Model.Message
+            </div>
+        }
 
-@if (!string.IsNullOrEmpty(Model.ErrorMessage))
-{
-    <p style="color: red;">@Model.ErrorMessage</p>
-}
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="index-message error">
+                <span>?</span> @Model.ErrorMessage
+            </div>
+        }
 
-<form method="post">
-    <div>
-        <label for="code">Enter Code:</label>
-        <input type="text" id="code" name="code" required />
+        <!-- Access Form -->
+        <form method="post" class="index-form">
+            <div class="index-form-group">
+                <label for="code" class="index-label">Enter Your Code</label>
+                <input 
+                    type="text" 
+                    id="code" 
+                    name="code" 
+                    class="index-input"
+                    placeholder="e.g., mysecret123"
+                    required 
+                    autocomplete="off"
+                    spellcheck="false" />
+                <small class="index-hint">Your unique access code for the encrypted note</small>
+            </div>
+
+            <button type="submit" class="index-unlock-btn">
+                <span class="btn-icon">??</span>
+                <span class="btn-text">Unlock Note</span>
+            </button>
+        </form>
+
+        <!-- Footer Info -->
+        <div class="index-footer">
+            <p class="index-info">
+                <span class="info-icon">??</span>
+                End-to-end encrypted. Zero knowledge architecture.
+            </p>
+        </div>
     </div>
-    <div>
-        <button type="submit">Access Note</button>
-    </div>
-</form>
+</div>
+
+<style>
+/* ===================================
+   INDEX PAGE GLASSMORPHISM STYLES
+   =================================== */
+
+.index-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: #0b0f1a;
+}
+
+.index-glass-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 3rem;
+    max-width: 480px;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header */
+.index-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.index-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #e5e7eb;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+}
+
+.index-subtitle {
+    font-size: 1rem;
+    color: #9ca3af;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Messages */
+.index-message {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: slideIn 0.4s ease-out;
+}
+
+@@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.index-message.success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+}
+
+.index-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.index-message span:first-child {
+    font-size: 1.1rem;
+}
+
+/* Form */
+.index-form {
+    margin-bottom: 2rem;
+}
+
+.index-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.index-label {
+    display: block;
+    color: #e5e7eb;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+.index-input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    color: #e5e7eb;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.index-input:focus {
+    outline: none;
+    border-color: #7c7cff;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 4px rgba(124, 124, 255, 0.15);
+}
+
+.index-input::placeholder {
+    color: #9ca3af;
+}
+
+.index-hint {
+    display: block;
+    color: #9ca3af;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+/* Unlock Button */
+.index-unlock-btn {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: #7c7cff;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(124, 124, 255, 0.35);
+    font-family: inherit;
+}
+
+.index-unlock-btn:hover {
+    background: #9d9dff;
+    box-shadow: 0 6px 20px rgba(124, 124, 255, 0.45);
+    transform: translateY(-2px);
+}
+
+.index-unlock-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 12px rgba(124, 124, 255, 0.35);
+}
+
+.index-unlock-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(124, 124, 255, 0.2), 0 4px 16px rgba(124, 124, 255, 0.35);
+}
+
+.btn-icon {
+    font-size: 1.2rem;
+}
+
+.btn-text {
+    font-size: 1rem;
+}
+
+/* Footer */
+.index-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.index-info {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.info-icon {
+    font-size: 1rem;
+}
+
+/* Responsive */
+@@media (max-width: 768px) {
+    .index-container {
+        padding: 1.5rem;
+    }
+
+    .index-glass-card {
+        padding: 2rem;
+    }
+
+    .index-title {
+        font-size: 2rem;
+    }
+
+    .index-subtitle {
+        font-size: 0.9rem;
+    }
+}
+
+@@media (max-width: 480px) {
+    .index-container {
+        padding: 1rem;
+    }
+
+    .index-glass-card {
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+
+    .index-title {
+        font-size: 1.75rem;
+    }
+}
+</style>
+
