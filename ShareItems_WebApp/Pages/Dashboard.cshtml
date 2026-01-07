@@ -1,0 +1,174 @@
+@page "/Dashboard/{code}"
+@model ShareItems_WebApp.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1>Dashboard</h1>
+<h2>Code: @Model.Code</h2>
+
+<div>
+    <a href="/">? Go Back to Home</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <p style="color: green;">@Model.Message</p>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p style="color: red;">@Model.ErrorMessage</p>
+}
+
+<hr />
+
+<h3>Safety Lock</h3>
+<p>Current Status: @(Model.HasPin ? "?? Locked" : "?? Unlocked")</p>
+
+@if (!Model.HasPin)
+{
+    <h4>Set PIN to Lock Note</h4>
+    <form method="post" asp-page-handler="SetPin">
+        <div>
+            <label for="pin">Enter PIN:</label>
+            <input type="password" id="pin" name="pin" required minlength="4" />
+        </div>
+        <div>
+            <label for="confirmPin">Confirm PIN:</label>
+            <input type="password" id="confirmPin" name="confirmPin" required minlength="4" />
+        </div>
+        <div>
+            <button type="submit">Lock Note</button>
+        </div>
+    </form>
+}
+else
+{
+    <h4>Update PIN</h4>
+    <form method="post" asp-page-handler="UpdatePin">
+        <div>
+            <label for="currentPin">Current PIN:</label>
+            <input type="password" id="currentPin" name="currentPin" required />
+        </div>
+        <div>
+            <label for="newPin">New PIN:</label>
+            <input type="password" id="newPin" name="newPin" required minlength="4" />
+        </div>
+        <div>
+            <label for="confirmNewPin">Confirm New PIN:</label>
+            <input type="password" id="confirmNewPin" name="confirmNewPin" required minlength="4" />
+        </div>
+        <div>
+            <button type="submit">Update PIN</button>
+        </div>
+    </form>
+
+    <h4>Remove PIN Lock</h4>
+    <form method="post" asp-page-handler="RemovePin">
+        <div>
+            <label for="removePin">Enter Current PIN:</label>
+            <input type="password" id="removePin" name="removePin" required />
+        </div>
+        <div>
+            <button type="submit">Unlock Note</button>
+        </div>
+    </form>
+}
+
+<hr />
+
+<h3>Note Content</h3>
+<form method="post" asp-page-handler="SaveNote">
+    <div>
+        <textarea name="content" rows="10" cols="50">@Model.NoteContent</textarea>
+    </div>
+    <div>
+        <button type="submit">Save Note</button>
+    </div>
+</form>
+
+<hr />
+
+<h3>Upload File</h3>
+<p style="font-size: 0.9em; color: gray;">
+    <strong>Supported file types:</strong><br/>
+    <strong>Documents:</strong> .pdf, .doc, .docx, .txt, .rtf, .odt, .ppt, .pptx, .xls, .xlsx, .csv, .md, .json, .xml, .yaml, .yml<br/>
+    <strong>Images:</strong> .jpg, .jpeg, .png, .webp, .gif, .bmp, .tiff, .tif, .svg, .ico, .heic<br/>
+    <strong>Videos:</strong> .mp4, .mov, .mkv, .webm, .avi, .wmv, .flv, .m4v, .3gp<br/>
+    <strong>Others:</strong> .zip, .rar, .7z, .tar, .gz, .psd, .ai, .figma, .blend, .obj, .stl, .log, .dat<br/>
+    <em style="color: red;">?? Executable files (.exe, .bat, .cmd, .sh, .ps1, .js, .vbs, .jar, .php, .py, .rb) are NOT allowed</em>
+</p>
+<form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data">
+    <div>
+        <label for="file">Select File:</label>
+        <input type="file" id="file" name="file" required />
+    </div>
+    <div>
+        <button type="submit">Upload File</button>
+    </div>
+</form>
+
+<hr />
+
+<h3>Access Files</h3>
+<form method="post" asp-page-handler="LoadFiles">
+    <button type="submit" name="fileType" value="document">Documents</button>
+    <button type="submit" name="fileType" value="image">Photos</button>
+    <button type="submit" name="fileType" value="video">Videos</button>
+    <button type="submit" name="fileType" value="others">Others</button>
+</form>
+
+@if (Model.Files != null && Model.Files.Any())
+{
+    <hr />
+    <h3>Files (@Model.CurrentFileType)</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Uploaded At</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var file in Model.Files)
+            {
+                <tr>
+                    <td>@file.FileName</td>
+                    <td>@file.UploadedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>
+                        <a href="/Dashboard/@Model.Code?handler=Download&fileId=@file.Id">Download</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+<h3 style="color: red;">Danger Zone</h3>
+<h4>Destroy Note</h4>
+<p>This will permanently delete the note and all associated files. This action cannot be undone.</p>
+
+@if (Model.HasPin)
+{
+    <form method="post" asp-page-handler="DestroyNote">
+        <div>
+            <label for="destroyPin">Enter PIN to Confirm:</label>
+            <input type="password" id="destroyPin" name="destroyPin" required />
+        </div>
+        <div>
+            <button type="submit" style="background-color: red; color: white;">Destroy Note</button>
+        </div>
+    </form>
+}
+else
+{
+    <form method="post" asp-page-handler="DestroyNote" onsubmit="return confirm('Are you sure you want to permanently delete this note and all files? This cannot be undone!');">
+        <div>
+            <button type="submit" style="background-color: red; color: white;">Destroy Note</button>
+        </div>
+    </form>
+}

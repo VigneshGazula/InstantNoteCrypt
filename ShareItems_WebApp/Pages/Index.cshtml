@@ -1,0 +1,27 @@
+@page
+@model ShareItems_WebApp.Pages.IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h1>Instant Note Crypt</h1>
+
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <p style="color: green;">@Model.Message</p>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p style="color: red;">@Model.ErrorMessage</p>
+}
+
+<form method="post">
+    <div>
+        <label for="code">Enter Code:</label>
+        <input type="text" id="code" name="code" required />
+    </div>
+    <div>
+        <button type="submit">Access Note</button>
+    </div>
+</form>

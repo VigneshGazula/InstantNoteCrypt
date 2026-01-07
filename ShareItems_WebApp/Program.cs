@@ -17,6 +17,7 @@ builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 builder.Services.AddDataProtection();
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 var env = app.Services.GetRequiredService<IWebHostEnvironment>();
@@ -30,6 +31,7 @@ if (!Directory.Exists(uploadsPath))
 
 app.UseRouting();
 app.UseStaticFiles();
+app.MapRazorPages();
 app.MapControllers();
 app.UseAuthorization();
 app.MapControllerRoute(

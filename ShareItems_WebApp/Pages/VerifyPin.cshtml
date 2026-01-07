@@ -1,0 +1,31 @@
+@page "/VerifyPin/{code}"
+@model ShareItems_WebApp.Pages.VerifyPinModel
+@{
+    ViewData["Title"] = "Verify PIN";
+}
+
+<h1>?? Note is Locked</h1>
+<h2>Code: @Model.Code</h2>
+
+<p>This note is protected with a PIN. Please enter the PIN to access it.</p>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p style="color: red;">@Model.ErrorMessage</p>
+}
+
+<form method="post">
+    <div>
+        <label for="pin">Enter PIN:</label>
+        <input type="password" id="pin" name="pin" required autofocus />
+    </div>
+    <div>
+        <button type="submit">Unlock</button>
+    </div>
+</form>
+
+<hr />
+
+<div>
+    <a href="/">? Go Back to Home</a>
+</div>

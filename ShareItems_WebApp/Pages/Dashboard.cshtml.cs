@@ -1,0 +1,375 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using ShareItems_WebApp.Entities;
+using ShareItems_WebApp.Services;
+using ShareItems_WebApp.Helpers;
+
+namespace ShareItems_WebApp.Pages
+{
+    public class DashboardModel : PageModel
+    {
+        private readonly INoteService _noteService;
+        private readonly IFileStorageService _fileStorageService;
+
+        public DashboardModel(INoteService noteService, IFileStorageService fileStorageService)
+        {
+            _noteService = noteService;
+            _fileStorageService = fileStorageService;
+        }
+
+        [BindProperty(SupportsGet = true)]
+        public string Code { get; set; } = string.Empty;
+
+        public string? NoteContent { get; set; }
+        public int NoteId { get; set; }
+        public bool HasPin { get; set; }
+        public IEnumerable<NoteFile>? Files { get; set; }
+        public string? Message { get; set; }
+        public string? ErrorMessage { get; set; }
+        public string? CurrentFileType { get; set; }
+
+        public async Task<IActionResult> OnGetAsync()
+        {
+            if (string.IsNullOrWhiteSpace(Code))
+            {
+                return RedirectToPage("/Index");
+            }
+
+            var note = await _noteService.GetNoteByCodeAsync(Code);
+
+            if (note == null)
+            {
+                return RedirectToPage("/Index");
+            }
+
+            NoteId = note.Id;
+            NoteContent = note.Content;
+            HasPin = !string.IsNullOrWhiteSpace(note.Pin);
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostSaveNoteAsync(string content)
+        {
+            var note = await _noteService.GetNoteByCodeAsync(Code);
+
+            if (note == null)
+            {
+                ErrorMessage = "Note not found.";
+                return Page();
+            }
+
+            NoteId = note.Id;
+            await _noteService.UpdateNoteContentAsync(note.Id, content ?? string.Empty);
+            NoteContent = content;
+            HasPin = !string.IsNullOrWhiteSpace(note.Pin);
+            Message = "Note saved successfully.";
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostUploadFileAsync(IFormFile file)
+        {
+            var note = await _noteService.GetNoteByCodeAsync(Code);
+
+            if (note == null)
+            {
+                ErrorMessage = "Note not found.";
+                return Page();
+            }
+
+            NoteId = note.Id;
+            NoteContent = note.Content;
+            HasPin = !string.IsNullOrWhiteSpace(note.Pin);
+
+            if (file == null || file.Length == 0)
+            {
+                ErrorMessage = "Please select a file.";
+                return Page();
+            }
+
+            // Security check: Block forbidden extensions
+            if (FileValidationHelper.IsForbiddenExtension(file.FileName))
+            {
+                var extension = Path.GetExtension(file.FileName);
+                ErrorMessage = $"Security Error: Files with extension '{extension}' are not allowed for security reasons. Executable and script files are forbidden.";
+                return Page();
+            }
+
+            // Automatically detect file type based on extension
+            var detectedFileType = FileValidationHelper.DetectFileType(file.FileName);
+
+            if (string.IsNullOrWhiteSpace(detectedFileType))
+            {
+                ErrorMessage = $"Unsupported file type. {FileValidationHelper.GetSupportedFileTypesMessage()}";
+                return Page();
+            }
+
+            // Validate file size
+            if (!FileValidationHelper.IsValidFileSize(file.Length))
+            {
+                ErrorMessage = $"File size exceeds maximum allowed size of {FileValidationHelper.GetFileSizeString(FileValidationHelper.MaxFileSize)}.";
+                return Page();
+            }
+
+            try
+            {
+                await _fileStorageService.SaveFileAsync(note.Id, file, detectedFileType, Code);
+                Message = $"File uploaded successfully as {detectedFileType}.";
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Upload failed: {ex.Message}";
+            }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostLoadFilesAsync(string fileType)
+        {
+            var note = await _noteService.GetNoteByCodeAsync(Code);
+
+            if (note == null)
+            {
+                ErrorMessage = "Note not found.";
+                return Page();
+            }
+
+            NoteId = note.Id;
+            NoteContent = note.Content;
+            HasPin = !string.IsNullOrWhiteSpace(note.Pin);
+            CurrentFileType = fileType;
+
+            if (string.IsNullOrWhiteSpace(fileType))
+            {
+                Files = await _fileStorageService.GetFilesByNoteIdAsync(note.Id);
+            }
+            else
+            {
+                Files = await _fileStorageService.GetFilesByNoteIdAndTypeAsync(note.Id, fileType);
+            }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnGetDownloadAsync(int fileId)
+        {
+            var file = await _fileStorageService.GetFileByIdAsync(fileId);
+
+            if (file == null)
+            {
+                ErrorMessage = "File not found.";
+                return Page();
+            }
+
+            var physicalPath = _fileStorageService.GetPhysicalPath(file.FilePath);
+
+            if (!System.IO.File.Exists(physicalPath))
+            {
+                ErrorMessage = "File does not exist on disk.";
+                return Page();
+            }
+
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(physicalPath);
+            return File(fileBytes, file.ContentType, file.FileName);
+        }
+
+        public async Task<IActionResult> OnPostSetPinAsync(string pin, string confirmPin)
+        {
+            var note = await _noteService.GetNoteByCodeAsync(Code);
+
+            if (note == null)
+            {
+                ErrorMessage = "Note not found.";
+                return Page();
+            }
+
+            NoteId = note.Id;
+            NoteContent = note.Content;
+            HasPin = !string.IsNullOrWhiteSpace(note.Pin);
+
+            if (string.IsNullOrWhiteSpace(pin) || string.IsNullOrWhiteSpace(confirmPin))
+            {
+                ErrorMessage = "PIN and Confirm PIN are required.";
+                return Page();
+            }
+
+            if (pin != confirmPin)
+            {
+                ErrorMessage = "PINs do not match.";
+                return Page();
+            }
+
+            if (pin.Length < 4)
+            {
+                ErrorMessage = "PIN must be at least 4 characters.";
+                return Page();
+            }
+
+            try
+            {
+                await _noteService.SetNotePinAsync(note.Id, pin);
+                HasPin = true;
+                Message = "PIN set successfully. Note is now locked.";
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to set PIN: {ex.Message}";
+            }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostRemovePinAsync(string removePin)
+        {
+            var note = await _noteService.GetNoteByCodeAsync(Code);
+
+            if (note == null)
+            {
+                ErrorMessage = "Note not found.";
+                return Page();
+            }
+
+            NoteId = note.Id;
+            NoteContent = note.Content;
+            HasPin = !string.IsNullOrWhiteSpace(note.Pin);
+
+            if (string.IsNullOrWhiteSpace(removePin))
+            {
+                ErrorMessage = "Please enter the current PIN.";
+                return Page();
+            }
+
+            var isValid = await _noteService.ValidatePinAsync(note.Id, removePin);
+
+            if (!isValid)
+            {
+                ErrorMessage = "Invalid PIN. Cannot unlock note.";
+                return Page();
+            }
+
+            try
+            {
+                await _noteService.RemoveNotePinAsync(note.Id);
+                HasPin = false;
+                Message = "PIN removed successfully. Note is now unlocked.";
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to remove PIN: {ex.Message}";
+            }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostUpdatePinAsync(string currentPin, string newPin, string confirmNewPin)
+        {
+            var note = await _noteService.GetNoteByCodeAsync(Code);
+
+            if (note == null)
+            {
+                ErrorMessage = "Note not found.";
+                return Page();
+            }
+
+            NoteId = note.Id;
+            NoteContent = note.Content;
+            HasPin = !string.IsNullOrWhiteSpace(note.Pin);
+
+            if (string.IsNullOrWhiteSpace(currentPin) || string.IsNullOrWhiteSpace(newPin) || string.IsNullOrWhiteSpace(confirmNewPin))
+            {
+                ErrorMessage = "All fields are required.";
+                return Page();
+            }
+
+            // Validate current PIN
+            var isValid = await _noteService.ValidatePinAsync(note.Id, currentPin);
+
+            if (!isValid)
+            {
+                ErrorMessage = "Current PIN is incorrect.";
+                return Page();
+            }
+
+            // Check if new PINs match
+            if (newPin != confirmNewPin)
+            {
+                ErrorMessage = "New PINs do not match.";
+                return Page();
+            }
+
+            // Check new PIN length
+            if (newPin.Length < 4)
+            {
+                ErrorMessage = "New PIN must be at least 4 characters.";
+                return Page();
+            }
+
+            try
+            {
+                await _noteService.SetNotePinAsync(note.Id, newPin);
+                Message = "PIN updated successfully.";
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to update PIN: {ex.Message}";
+            }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostDestroyNoteAsync(string? destroyPin)
+        {
+            var note = await _noteService.GetNoteByCodeAsync(Code);
+
+            if (note == null)
+            {
+                ErrorMessage = "Note not found.";
+                return RedirectToPage("/Index");
+            }
+
+            NoteId = note.Id;
+            NoteContent = note.Content;
+            HasPin = !string.IsNullOrWhiteSpace(note.Pin);
+
+            // If note has PIN, validate it
+            if (HasPin)
+            {
+                if (string.IsNullOrWhiteSpace(destroyPin))
+                {
+                    ErrorMessage = "Please enter the PIN to destroy this note.";
+                    return Page();
+                }
+
+                var isValid = await _noteService.ValidatePinAsync(note.Id, destroyPin);
+
+                if (!isValid)
+                {
+                    ErrorMessage = "Invalid PIN. Cannot destroy note.";
+                    return Page();
+                }
+            }
+
+            try
+            {
+                var deleted = await _noteService.DeleteNoteAsync(note.Id);
+
+                if (deleted)
+                {
+                    TempData["Message"] = "Note and all associated files have been permanently deleted.";
+                    return RedirectToPage("/Index");
+                }
+                else
+                {
+                    ErrorMessage = "Failed to delete note.";
+                    return Page();
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to destroy note: {ex.Message}";
+                return Page();
+            }
+        }
+    }
+}
