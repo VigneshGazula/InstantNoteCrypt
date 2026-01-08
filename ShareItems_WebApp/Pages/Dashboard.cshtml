@@ -1,453 +1,202 @@
 @page "/Dashboard/{code}"
 @model ShareItems_WebApp.Pages.DashboardModel
 @{
-    ViewData["Title"] = "Dashboard - " + Model.Code;
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="dashboard-page">
-    <!-- Main Glass Container -->
-    <div class="dashboard-container">
-        
-        <!-- Header Section -->
-        <div class="dashboard-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <h1 class="dashboard-title">Dashboard</h1>
-                    <div class="code-badge">
-                        <span class="badge-icon">??</span>
-                        <span class="badge-text">@Model.Code</span>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <a href="/" class="back-link">
-                        <span class="back-icon">?</span>
-                        <span>Home</span>
-                    </a>
-                </div>
-            </div>
-        </div>
+<h1>Dashboard</h1>
+<h2>Code: @Model.Code</h2>
 
-        <!-- Messages -->
-        @if (!string.IsNullOrEmpty(Model.Message))
-        {
-            <div class="dashboard-message success">
-                <span class="message-icon">?</span>
-                <span class="message-text">@Model.Message</span>
-            </div>
-        }
-
-        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-        {
-            <div class="dashboard-message error">
-                <span class="message-icon">?</span>
-                <span class="message-text">@Model.ErrorMessage</span>
-            </div>
-        }
-
-        <!-- Navigation Tabs -->
-        <div class="dashboard-tabs">
-            <button type="button" class="tab-btn active" onclick="showTab('notes')">
-                <span class="tab-icon">??</span>
-                <span class="tab-text">Notes</span>
-            </button>
-            <button type="button" class="tab-btn" onclick="showTab('documents')">
-                <span class="tab-icon">??</span>
-                <span class="tab-text">Documents</span>
-            </button>
-            <button type="button" class="tab-btn" onclick="showTab('photos')">
-                <span class="tab-icon">???</span>
-                <span class="tab-text">Photos</span>
-            </button>
-            <button type="button" class="tab-btn" onclick="showTab('videos')">
-                <span class="tab-icon">??</span>
-                <span class="tab-text">Videos</span>
-            </button>
-            <button type="button" class="tab-btn" onclick="showTab('others')">
-                <span class="tab-icon">??</span>
-                <span class="tab-text">Others</span>
-            </button>
-            <button type="button" class="tab-btn" onclick="showTab('security')">
-                <span class="tab-icon">??</span>
-                <span class="tab-text">Security</span>
-            </button>
-        </div>
-
-        <!-- Tab Content Areas -->
-        
-        <!-- Notes Tab -->
-        <div id="tab-notes" class="tab-content active">
-            <div class="content-section">
-                <h3 class="section-title">?? Note Content</h3>
-                <p class="section-description">Write your encrypted note. All content is stored securely.</p>
-                <form method="post" asp-page-handler="SaveNote" class="note-form">
-                    <div class="note-editor">
-                        <textarea name="content" class="note-textarea" rows="20" placeholder="Start writing your encrypted note here...&#10;&#10;• All content is encrypted&#10;• Auto-saved on submit&#10;• Accessible only with your code">@Model.NoteContent</textarea>
-                        <div class="note-footer">
-                            <span class="char-count">@(Model.NoteContent?.Length ?? 0) characters</span>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save-note">
-                            <span class="btn-icon">??</span>
-                            <span>Save Note</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Documents Tab -->
-        <div id="tab-documents" class="tab-content">
-            <div class="content-section">
-                <h3 class="section-title">?? Upload Document</h3>
-                <div class="upload-card">
-                    <div class="upload-info">
-                        <p class="info-text">
-                            <strong>Supported formats:</strong> PDF, DOC, DOCX, TXT, RTF, ODT, PPT, PPTX, XLS, XLSX, CSV, MD, JSON, XML, YAML
-                        </p>
-                    </div>
-                    <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
-                        <div class="file-input-group">
-                            <label class="file-input-label">
-                                <input type="file" id="file-doc" name="file" class="file-input" required />
-                                <div class="file-input-display">
-                                    <span class="file-icon">??</span>
-                                    <span class="file-text">Choose Document File</span>
-                                    <span class="file-hint">or drag and drop</span>
-                                </div>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn-upload">
-                            <span class="btn-icon">??</span>
-                            <span>Upload Document</span>
-                        </button>
-                    </form>
-                </div>
-                
-                <div class="files-section">
-                    <form method="post" asp-page-handler="LoadFiles" style="display: inline;">
-                        <input type="hidden" name="fileType" value="document" />
-                        <button type="submit" class="btn-load-files">
-                            <span class="btn-icon">??</span>
-                            <span>Load Documents</span>
-                        </button>
-                    </form>
-                    
-                    @if (Model.Files != null && Model.Files.Any() && Model.CurrentFileType == "document")
-                    {
-                        @await Html.PartialAsync("_FilesList", Model)
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Photos Tab -->
-        <div id="tab-photos" class="tab-content">
-            <div class="content-section">
-                <h3 class="section-title">??? Upload Photo</h3>
-                <div class="upload-card">
-                    <div class="upload-info">
-                        <p class="info-text">
-                            <strong>Supported formats:</strong> JPG, JPEG, PNG, WEBP, GIF, BMP, TIFF, SVG, ICO, HEIC
-                        </p>
-                    </div>
-                    <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
-                        <div class="file-input-group">
-                            <label class="file-input-label">
-                                <input type="file" id="file-img" name="file" class="file-input" accept="image/*" required />
-                                <div class="file-input-display">
-                                    <span class="file-icon">???</span>
-                                    <span class="file-text">Choose Photo File</span>
-                                    <span class="file-hint">or drag and drop</span>
-                                </div>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn-upload">
-                            <span class="btn-icon">??</span>
-                            <span>Upload Photo</span>
-                        </button>
-                    </form>
-                </div>
-                
-                <div class="files-section">
-                    <form method="post" asp-page-handler="LoadFiles" style="display: inline;">
-                        <input type="hidden" name="fileType" value="image" />
-                        <button type="submit" class="btn-load-files">
-                            <span class="btn-icon">??</span>
-                            <span>Load Photos</span>
-                        </button>
-                    </form>
-                    
-                    @if (Model.Files != null && Model.Files.Any() && Model.CurrentFileType == "image")
-                    {
-                        @await Html.PartialAsync("_FilesList", Model)
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Videos Tab -->
-        <div id="tab-videos" class="tab-content">
-            <div class="content-section">
-                <h3 class="section-title">?? Upload Video</h3>
-                <div class="upload-card">
-                    <div class="upload-info">
-                        <p class="info-text">
-                            <strong>Supported formats:</strong> MP4, MOV, MKV, WEBM, AVI, WMV, FLV, M4V, 3GP
-                        </p>
-                    </div>
-                    <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
-                        <div class="file-input-group">
-                            <label class="file-input-label">
-                                <input type="file" id="file-vid" name="file" class="file-input" accept="video/*" required />
-                                <div class="file-input-display">
-                                    <span class="file-icon">??</span>
-                                    <span class="file-text">Choose Video File</span>
-                                    <span class="file-hint">or drag and drop</span>
-                                </div>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn-upload">
-                            <span class="btn-icon">??</span>
-                            <span>Upload Video</span>
-                        </button>
-                    </form>
-                </div>
-                
-                <div class="files-section">
-                    <form method="post" asp-page-handler="LoadFiles" style="display: inline;">
-                        <input type="hidden" name="fileType" value="video" />
-                        <button type="submit" class="btn-load-files">
-                            <span class="btn-icon">??</span>
-                            <span>Load Videos</span>
-                        </button>
-                    </form>
-                    
-                    @if (Model.Files != null && Model.Files.Any() && Model.CurrentFileType == "video")
-                    {
-                        @await Html.PartialAsync("_FilesList", Model)
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Others Tab -->
-        <div id="tab-others" class="tab-content">
-            <div class="content-section">
-                <h3 class="section-title">?? Upload Other Files</h3>
-                <div class="upload-card">
-                    <div class="upload-info">
-                        <p class="info-text">
-                            <strong>Supported formats:</strong> ZIP, RAR, 7Z, TAR, GZ, PSD, AI, Figma, Blend, OBJ, STL, LOG, DAT
-                        </p>
-                        <p class="warning-text">
-                            <span class="warning-icon">??</span>
-                            <strong>Not allowed:</strong> Executable files (EXE, BAT, CMD, SH, PS1, JS, VBS, JAR, PHP, PY, RB)
-                        </p>
-                    </div>
-                    <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" class="upload-form">
-                        <div class="file-input-group">
-                            <label class="file-input-label">
-                                <input type="file" id="file-other" name="file" class="file-input" required />
-                                <div class="file-input-display">
-                                    <span class="file-icon">??</span>
-                                    <span class="file-text">Choose File</span>
-                                    <span class="file-hint">or drag and drop</span>
-                                </div>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn-upload">
-                            <span class="btn-icon">??</span>
-                            <span>Upload File</span>
-                        </button>
-                    </form>
-                </div>
-                
-                <div class="files-section">
-                    <form method="post" asp-page-handler="LoadFiles" style="display: inline;">
-                        <input type="hidden" name="fileType" value="others" />
-                        <button type="submit" class="btn-load-files">
-                            <span class="btn-icon">??</span>
-                            <span>Load Other Files</span>
-                        </button>
-                    </form>
-                    
-                    @if (Model.Files != null && Model.Files.Any() && Model.CurrentFileType == "others")
-                    {
-                        @await Html.PartialAsync("_FilesList", Model)
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Security Tab -->
-        <div id="tab-security" class="tab-content">
-            <div class="content-section">
-                <h3 class="section-title">?? Security Settings</h3>
-                
-                <div class="security-status">
-                    <div class="status-indicator @(Model.HasPin ? "locked" : "unlocked")">
-                        <span class="status-icon">@(Model.HasPin ? "??" : "??")</span>
-                        <span class="status-text">@(Model.HasPin ? "Locked" : "Unlocked")</span>
-                    </div>
-                </div>
-
-                @if (!Model.HasPin)
-                {
-                    <div class="security-card">
-                        <h4 class="card-title">Set PIN Protection</h4>
-                        <form method="post" asp-page-handler="SetPin" class="security-form">
-                            <div class="form-group">
-                                <label for="pin">Enter PIN</label>
-                                <input type="password" id="pin" name="pin" class="form-input" required minlength="4" placeholder="Minimum 4 characters" />
-                            </div>
-                            <div class="form-group">
-                                <label for="confirmPin">Confirm PIN</label>
-                                <input type="password" id="confirmPin" name="confirmPin" class="form-input" required minlength="4" placeholder="Re-enter PIN" />
-                            </div>
-                            <button type="submit" class="btn-primary">
-                                <span class="btn-icon">??</span>
-                                <span>Lock Note</span>
-                            </button>
-                        </form>
-                    </div>
-                }
-                else
-                {
-                    <div class="security-card">
-                        <h4 class="card-title">Update PIN</h4>
-                        <form method="post" asp-page-handler="UpdatePin" class="security-form">
-                            <div class="form-group">
-                                <label for="currentPin">Current PIN</label>
-                                <input type="password" id="currentPin" name="currentPin" class="form-input" required />
-                            </div>
-                            <div class="form-group">
-                                <label for="newPin">New PIN</label>
-                                <input type="password" id="newPin" name="newPin" class="form-input" required minlength="4" />
-                            </div>
-                            <div class="form-group">
-                                <label for="confirmNewPin">Confirm New PIN</label>
-                                <input type="password" id="confirmNewPin" name="confirmNewPin" class="form-input" required minlength="4" />
-                            </div>
-                            <button type="submit" class="btn-primary">
-                                <span class="btn-icon">??</span>
-                                <span>Update PIN</span>
-                            </button>
-                        </form>
-                    </div>
-
-                    <div class="security-card">
-                        <h4 class="card-title">Remove PIN Protection</h4>
-                        <form method="post" asp-page-handler="RemovePin" class="security-form">
-                            <div class="form-group">
-                                <label for="removePin">Enter Current PIN</label>
-                                <input type="password" id="removePin" name="removePin" class="form-input" required />
-                            </div>
-                            <button type="submit" class="btn-secondary">
-                                <span class="btn-icon">??</span>
-                                <span>Unlock Note</span>
-                            </button>
-                        </form>
-                    </div>
-                }
-
-                <!-- Danger Zone -->
-                <div class="danger-zone">
-                    <h4 class="danger-title">?? Danger Zone</h4>
-                    <p class="danger-description">This will permanently delete the note and all associated files. This action cannot be undone.</p>
-                    
-                    @if (Model.HasPin)
-                    {
-                        <form method="post" asp-page-handler="DestroyNote" class="danger-form">
-                            <div class="form-group">
-                                <label for="destroyPin">Enter PIN to Confirm</label>
-                                <input type="password" id="destroyPin" name="destroyPin" class="form-input" required />
-                            </div>
-                            <button type="submit" class="btn-danger">
-                                <span class="btn-icon">??</span>
-                                <span>Destroy Note</span>
-                            </button>
-                        </form>
-                    }
-                    else
-                    {
-                        <form method="post" asp-page-handler="DestroyNote" onsubmit="return confirm('Are you sure you want to permanently delete this note and all files? This cannot be undone!');" class="danger-form">
-                            <button type="submit" class="btn-danger">
-                                <span class="btn-icon">??</span>
-                                <span>Destroy Note</span>
-                            </button>
-                        </form>
-                    }
-                </div>
-            </div>
-        </div>
-
-    </div>
+<div>
+    <a href="/">? Go Back to Home</a>
 </div>
 
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <p style="color: green;">@Model.Message</p>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p style="color: red;">@Model.ErrorMessage</p>
+}
+
+<hr />
+
+<h3>Safety Lock</h3>
+<p>Current Status: @(Model.HasPin ? "?? Locked" : "?? Unlocked")</p>
+
+@if (!Model.HasPin)
+{
+    <h4>Set PIN to Lock Note</h4>
+    <form method="post" asp-page-handler="SetPin">
+        <div>
+            <label for="pin">Enter PIN:</label>
+            <input type="password" id="pin" name="pin" required minlength="4" />
+        </div>
+        <div>
+            <label for="confirmPin">Confirm PIN:</label>
+            <input type="password" id="confirmPin" name="confirmPin" required minlength="4" />
+        </div>
+        <div>
+            <button type="submit">Lock Note</button>
+        </div>
+    </form>
+}
+else
+{
+    <h4>Update PIN</h4>
+    <form method="post" asp-page-handler="UpdatePin">
+        <div>
+            <label for="currentPin">Current PIN:</label>
+            <input type="password" id="currentPin" name="currentPin" required />
+        </div>
+        <div>
+            <label for="newPin">New PIN:</label>
+            <input type="password" id="newPin" name="newPin" required minlength="4" />
+        </div>
+        <div>
+            <label for="confirmNewPin">Confirm New PIN:</label>
+            <input type="password" id="confirmNewPin" name="confirmNewPin" required minlength="4" />
+        </div>
+        <div>
+            <button type="submit">Update PIN</button>
+        </div>
+    </form>
+
+    <h4>Remove PIN Lock</h4>
+    <form method="post" asp-page-handler="RemovePin">
+        <div>
+            <label for="removePin">Enter Current PIN:</label>
+            <input type="password" id="removePin" name="removePin" required />
+        </div>
+        <div>
+            <button type="submit">Unlock Note</button>
+        </div>
+    </form>
+}
+
+<hr />
+
+<h3>Note Content</h3>
+<form method="post" asp-page-handler="SaveNote">
+    <div>
+        <textarea name="content" rows="10" cols="50">@Model.NoteContent</textarea>
+    </div>
+    <div>
+        <button type="submit">Save Note</button>
+    </div>
+</form>
+
+<hr />
+
+<h3>Upload File</h3>
+<p style="font-size: 0.9em; color: gray;">
+    <strong>Supported file types:</strong><br/>
+    <strong>Documents:</strong> .pdf, .doc, .docx, .txt, .rtf, .odt, .ppt, .pptx, .xls, .xlsx, .csv, .md, .json, .xml, .yaml, .yml<br/>
+    <strong>Images:</strong> .jpg, .jpeg, .png, .webp, .gif, .bmp, .tiff, .tif, .svg, .ico, .heic<br/>
+    <strong>Videos:</strong> .mp4, .mov, .mkv, .webm, .avi, .wmv, .flv, .m4v, .3gp<br/>
+    <strong>Others:</strong> .zip, .rar, .7z, .tar, .gz, .psd, .ai, .figma, .blend, .obj, .stl, .log, .dat<br/>
+    <em style="color: red;">?? Executable files (.exe, .bat, .cmd, .sh, .ps1, .js, .vbs, .jar, .php, .py, .rb) are NOT allowed</em>
+</p>
+<form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data">
+    <div>
+        <label for="file">Select File:</label>
+        <input type="file" id="file" name="file" required />
+    </div>
+    <div>
+        <button type="submit">Upload File</button>
+    </div>
+</form>
+
+<hr />
+
+<h3>Access Files</h3>
+<form method="post" asp-page-handler="LoadFiles">
+    <button type="submit" name="fileType" value="document">Documents</button>
+    <button type="submit" name="fileType" value="image">Photos</button>
+    <button type="submit" name="fileType" value="video">Videos</button>
+    <button type="submit" name="fileType" value="others">Others</button>
+</form>
+
+@if (Model.Files != null && Model.Files.Any())
+{
+    <hr />
+    <h3>Files (@Model.CurrentFileType)</h3>
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Size</th>
+                <th>Uploaded At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var file in Model.Files)
+            {
+                <tr>
+                    <td>@file.FileName</td>
+                    <td>@(file.FileSize / 1024.0 > 1024 ? $"{file.FileSize / 1024.0 / 1024.0:F2} MB" : $"{file.FileSize / 1024.0:F2} KB")</td>
+                    <td>@file.UploadedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>
+                        <a href="javascript:void(0);" onclick="previewFile(@file.Id, '@file.FileType', '@file.FileName')" style="margin-right: 10px;">??? Preview</a>
+                        <a href="/Dashboard/@Model.Code?handler=Download&fileId=@file.Id" style="margin-right: 10px;">?? Download</a>
+                        <a href="javascript:void(0);" onclick="deleteFile(@file.Id, '@file.FileName')" style="color: red;">??? Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
 <!-- Preview Modal -->
-<div id="previewModal" class="preview-modal">
-    <div class="modal-content">
-        <span onclick="closePreview()" class="modal-close">&times;</span>
-        <h2 id="previewTitle" class="modal-title">File Preview</h2>
-        <div id="previewContent" class="modal-body"></div>
+<div id="previewModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);">
+    <div style="position: relative; margin: 2% auto; padding: 20px; background-color: white; width: 90%; max-width: 1000px; max-height: 90vh; overflow: auto;">
+        <span onclick="closePreview()" style="position: absolute; top: 10px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h2 id="previewTitle" style="margin-top: 0;">File Preview</h2>
+        <div id="previewContent"></div>
     </div>
 </div>
 
 <script>
-    // Tab switching
-    function showTab(tabName) {
-        // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        
-        // Remove active class from all buttons
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        // Show selected tab
-        const selectedTab = document.getElementById('tab-' + tabName);
-        if (selectedTab) {
-            selectedTab.classList.add('active');
-        }
-        
-        // Add active class to clicked button
-        event.target.closest('.tab-btn').classList.add('active');
-    }
-    
-    // Preview functions
     function previewFile(fileId, fileType, fileName) {
         const modal = document.getElementById('previewModal');
         const title = document.getElementById('previewTitle');
         const content = document.getElementById('previewContent');
         
         title.textContent = fileName;
+        
+        // Get file URL via download handler
         const fileUrl = '/Dashboard/@Model.Code?handler=Download&fileId=' + fileId;
+        
+        // Clear previous content
         content.innerHTML = '';
         
+        // Create preview based on file type
         if (fileType === 'image') {
-            content.innerHTML = '<img src="' + fileUrl + '" style="max-width: 100%; height: auto; border-radius: 8px;" />';
+            content.innerHTML = '<img src="' + fileUrl + '" style="max-width: 100%; height: auto;" />';
         } else if (fileType === 'video') {
-            content.innerHTML = '<video controls style="max-width: 100%; height: auto; border-radius: 8px;"><source src="' + fileUrl + '">Your browser does not support video preview.</video>';
+            content.innerHTML = '<video controls style="max-width: 100%; height: auto;"><source src="' + fileUrl + '">Your browser does not support video preview.</video>';
         } else if (fileType === 'document') {
+            // For PDFs and documents
             if (fileName.toLowerCase().endsWith('.pdf')) {
-                content.innerHTML = '<iframe src="' + fileUrl + '" style="width: 100%; height: 600px; border: none; border-radius: 8px;"></iframe>';
+                content.innerHTML = '<iframe src="' + fileUrl + '" style="width: 100%; height: 600px; border: none;"></iframe>';
             } else if (fileName.toLowerCase().match(/\.(txt|md|json|xml|yaml|yml|csv)$/)) {
+                // For text-based files, fetch and display content
                 fetch(fileUrl)
                     .then(response => response.text())
                     .then(text => {
-                        content.innerHTML = '<pre style="background: rgba(0,0,0,0.3); color: #e5e7eb; padding: 15px; border-radius: 8px; overflow: auto; max-height: 600px;">' + escapeHtml(text) + '</pre>';
+                        content.innerHTML = '<pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow: auto; max-height: 600px;">' + escapeHtml(text) + '</pre>';
                     })
                     .catch(err => {
-                        content.innerHTML = '<p>Cannot preview this file. <a href="' + fileUrl + '" download style="color: #7c7cff;">Download instead</a></p>';
+                        content.innerHTML = '<p>Cannot preview this file. <a href="' + fileUrl + '" download>Download instead</a></p>';
                     });
             } else {
-                content.innerHTML = '<p>Preview not available for this document type. <a href="' + fileUrl + '" download style="color: #7c7cff;">Download to view</a></p>';
+                content.innerHTML = '<p>Preview not available for this document type. <a href="' + fileUrl + '" download>Download to view</a></p>';
             }
         } else {
-            content.innerHTML = '<p>Preview not available for this file type. <a href="' + fileUrl + '" download style="color: #7c7cff;">Download to view</a></p>';
+            content.innerHTML = '<p>Preview not available for this file type. <a href="' + fileUrl + '" download>Download to view</a></p>';
         }
         
         modal.style.display = 'block';
@@ -465,6 +214,7 @@
     
     function deleteFile(fileId, fileName) {
         if (confirm('Are you sure you want to delete "' + fileName + '"? This action cannot be undone.')) {
+            // Create a form and submit it
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '/Dashboard/@Model.Code?handler=DeleteFile';
@@ -480,6 +230,7 @@
         }
     }
     
+    // Close modal when clicking outside
     window.onclick = function(event) {
         const modal = document.getElementById('previewModal');
         if (event.target == modal) {
@@ -488,920 +239,29 @@
     }
 </script>
 
-@section Styles {
-<style>
-/* ===================================
-   DASHBOARD GLASSMORPHISM STYLES
-   =================================== */
-
-.dashboard-page {
-    min-height: 100vh;
-    background: #0b0f1a;
-    padding: 2rem 1rem;
-}
-
-.dashboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 20px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    overflow: hidden;
-}
-
-/* Header */
-.dashboard-header {
-    padding: 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.dashboard-title {
-    font-size: 1.75rem;
-    color: #e5e7eb;
-    margin: 0;
-    font-weight: 600;
-}
-
-.code-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: rgba(124, 124, 255, 0.1);
-    border: 1px solid rgba(124, 124, 255, 0.3);
-    border-radius: 8px;
-    color: #7c7cff;
-    font-weight: 500;
-}
-
-.badge-icon {
-    font-size: 1.1rem;
-}
-
-.badge-text {
-    font-family: 'Courier New', monospace;
-}
-
-.back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    color: #e5e7eb;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.back-link:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #7c7cff;
-}
-
-.back-icon {
-    font-size: 1.2rem;
-}
-
-/* Messages */
-.dashboard-message {
-    margin: 1.5rem 2rem;
-    padding: 1rem 1.25rem;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.95rem;
-}
-
-.dashboard-message.success {
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #22c55e;
-}
-
-.dashboard-message.error {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-}
-
-.message-icon {
-    font-size: 1.1rem;
-}
-
-/* Navigation Tabs */
-.dashboard-tabs {
-    display: flex;
-    gap: 0.5rem;
-    padding: 1.5rem 2rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
-}
-
-.dashboard-tabs::-webkit-scrollbar {
-    height: 6px;
-}
-
-.dashboard-tabs::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.dashboard-tabs::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 3px;
-}
-
-.tab-btn {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-bottom: none;
-    border-radius: 12px 12px 0 0;
-    color: #9ca3af;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
-    font-weight: 500;
-    font-family: inherit;
-}
-
-.tab-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #e5e7eb;
-}
-
-.tab-btn.active {
-    background: rgba(124, 124, 255, 0.15);
-    border-color: #7c7cff;
-    color: #7c7cff;
-}
-
-.tab-icon {
-    font-size: 1.1rem;
-}
-
-/* Tab Content */
-.tab-content {
-    display: none;
-    padding: 2rem;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-.content-section {
-    max-width: 900px;
-}
-
-.section-title {
-    font-size: 1.25rem;
-    color: #e5e7eb;
-    margin: 0 0 1.5rem 0;
-    font-weight: 600;
-}
-
-/* Forms */
-.note-form,
-.upload-form,
-.security-form,
-.danger-form {
-    margin-top: 1rem;
-}
-
-.section-description {
-    color: #9ca3af;
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-}
-
-/* Note Editor Styling */
-.note-editor {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.note-editor:focus-within {
-    border-color: #7c7cff;
-    box-shadow: 0 0 0 3px rgba(124, 124, 255, 0.15);
-}
-
-.note-textarea {
-    width: 100%;
-    min-height: 500px;
-    padding: 1.5rem;
-    background: transparent;
-    border: none;
-    color: #e5e7eb;
-    font-size: 1rem;
-    line-height: 1.7;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    resize: vertical;
-    transition: all 0.3s ease;
-}
-
-.note-textarea:focus {
-    outline: none;
-}
-
-.note-textarea::placeholder {
-    color: #9ca3af;
-    line-height: 1.7;
-}
-
-.note-footer {
-    padding: 0.75rem 1.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.char-count {
-    color: #9ca3af;
-    font-size: 0.85rem;
-    font-family: 'Courier New', monospace;
-}
-
-.btn-save-note {
-    margin-top: 1.5rem;
-    padding: 1rem 2rem;
-    background: #7c7cff;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(124, 124, 255, 0.35);
-    font-family: inherit;
-}
-
-.btn-save-note:hover {
-    background: #9d9dff;
-    box-shadow: 0 6px 20px rgba(124, 124, 255, 0.5);
-    transform: translateY(-2px);
-}
-
-.btn-save-note:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 12px rgba(124, 124, 255, 0.35);
-}
-
-.btn-save-note .btn-icon {
-    font-size: 1.3rem;
-}
-
-.form-group {
-    margin-bottom: 1.25rem;
-}
-
-.form-group label {
-    display: block;
-    color: #e5e7eb;
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-}
-
-.form-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    color: #e5e7eb;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: #7c7cff;
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 0 0 3px rgba(124, 124, 255, 0.15);
-}
-
-.form-input::placeholder {
-    color: #9ca3af;
-}
-
-/* File Upload */
-.upload-card {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
-
-.upload-info {
-    margin-bottom: 1.5rem;
-    padding: 1rem 1.25rem;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-}
-
-.info-text {
-    color: #9ca3af;
-    font-size: 0.9rem;
-    margin: 0;
-    line-height: 1.6;
-}
-
-.info-text strong {
-    color: #e5e7eb;
-    font-weight: 600;
-}
-
-.warning-text {
-    color: #ef4444;
-    font-size: 0.9rem;
-    margin: 0.75rem 0 0 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+<hr />
+
+<h3 style="color: red;">Danger Zone</h3>
+<h4>Destroy Note</h4>
+<p>This will permanently delete the note and all associated files. This action cannot be undone.</p>
+
+@if (Model.HasPin)
+{
+    <form method="post" asp-page-handler="DestroyNote">
+        <div>
+            <label for="destroyPin">Enter PIN to Confirm:</label>
+            <input type="password" id="destroyPin" name="destroyPin" required />
+        </div>
+        <div>
+            <button type="submit" style="background-color: red; color: white;">Destroy Note</button>
+        </div>
+    </form>
+}
+else
+{
+    <form method="post" asp-page-handler="DestroyNote" onsubmit="return confirm('Are you sure you want to permanently delete this note and all files? This cannot be undone!');">
+        <div>
+            <button type="submit" style="background-color: red; color: white;">Destroy Note</button>
+        </div>
+    </form>
 }
-
-.warning-text strong {
-    font-weight: 600;
-}
-
-.warning-icon {
-    font-size: 1rem;
-}
-
-.file-input-group {
-    margin-bottom: 1.5rem;
-}
-
-.file-input {
-    display: none;
-}
-
-.file-input-label {
-    display: block;
-    cursor: pointer;
-}
-
-.file-input-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem 2rem;
-    background: rgba(255, 255, 255, 0.04);
-    border: 2px dashed rgba(255, 255, 255, 0.12);
-    border-radius: 12px;
-    transition: all 0.3s ease;
-}
-
-.file-input-display:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: #7c7cff;
-    box-shadow: 0 0 20px rgba(124, 124, 255, 0.15);
-}
-
-.file-input:focus + .file-input-display {
-    border-color: #7c7cff;
-    box-shadow: 0 0 0 3px rgba(124, 124, 255, 0.15);
-}
-
-.file-input-display .file-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    filter: grayscale(0.3);
-}
-
-.file-input-display .file-text {
-    color: #e5e7eb;
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.file-input-display .file-hint {
-    color: #9ca3af;
-    font-size: 0.9rem;
-}
-
-.file-input-display:hover .file-text {
-    color: #7c7cff;
-}
-
-.btn-upload {
-    width: 100%;
-    padding: 1rem 1.5rem;
-    background: #7c7cff;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(124, 124, 255, 0.35);
-    font-family: inherit;
-}
-
-.btn-upload:hover {
-    background: #9d9dff;
-    box-shadow: 0 6px 20px rgba(124, 124, 255, 0.5);
-    transform: translateY(-2px);
-}
-
-.btn-upload:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 12px rgba(124, 124, 255, 0.35);
-}
-
-.btn-upload .btn-icon {
-    font-size: 1.3rem;
-}
-
-.files-section {
-    margin-top: 2rem;
-}
-
-.btn-load-files {
-    width: 100%;
-    padding: 0.875rem 1.5rem;
-    background: rgba(255, 255, 255, 0.06);
-    color: #e5e7eb;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    transition: all 0.3s ease;
-    margin-bottom: 1.5rem;
-    font-family: inherit;
-}
-
-.btn-load-files:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-}
-
-.btn-load-files .btn-icon {
-    font-size: 1.2rem;
-}
-
-/* Buttons */
-.btn-primary,
-.btn-secondary,
-.btn-danger {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    font-family: inherit;
-}
-
-.btn-primary {
-    background: #7c7cff;
-    color: white;
-    box-shadow: 0 4px 12px rgba(124, 124, 255, 0.35);
-}
-
-.btn-primary:hover {
-    background: #9d9dff;
-    box-shadow: 0 6px 16px rgba(124, 124, 255, 0.45);
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.06);
-    color: #e5e7eb;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.btn-danger {
-    background: #ef4444;
-    color: white;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
-}
-
-.btn-danger:hover {
-    background: #dc2626;
-    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.45);
-    transform: translateY(-2px);
-}
-
-.form-actions {
-    margin-top: 1rem;
-}
-
-/* Security Status */
-.security-status {
-    margin-bottom: 2rem;
-}
-
-.status-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 600;
-}
-
-.status-indicator.locked {
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #22c55e;
-}
-
-.status-indicator.unlocked {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-}
-
-.status-icon {
-    font-size: 1.5rem;
-}
-
-/* Security Cards */
-.security-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.card-title {
-    color: #e5e7eb;
-    font-size: 1.1rem;
-    margin: 0 0 1rem 0;
-    font-weight: 600;
-}
-
-/* Danger Zone */
-.danger-zone {
-    background: rgba(239, 68, 68, 0.05);
-    border: 2px solid rgba(239, 68, 68, 0.3);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-top: 2rem;
-}
-
-.danger-title {
-    color: #ef4444;
-    font-size: 1.1rem;
-    margin: 0 0 0.5rem 0;
-    font-weight: 600;
-}
-
-.danger-description {
-    color: #9ca3af;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-}
-
-/* Files List Container */
-.files-list-container {
-    margin-top: 2rem;
-}
-.preview-modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(11, 15, 26, 0.95);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
-
-.modal-content {
-    position: relative;
-    margin: 2% auto;
-    padding: 2rem;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px;
-    width: 90%;
-    max-width: 1000px;
-    max-height: 90vh;
-    overflow: auto;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-
-.modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    font-size: 2rem;
-    font-weight: bold;
-    cursor: pointer;
-    color: #e5e7eb;
-    transition: color 0.3s ease;
-}
-
-.modal-close:hover {
-    color: #7c7cff;
-}
-
-.modal-title {
-    color: #e5e7eb;
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-}
-
-.modal-body {
-    color: #e5e7eb;
-}
-
-.modal-body img,
-.modal-body video {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Responsive */
-@@media (max-width: 1024px) {
-    .dashboard-container {
-        max-width: 100%;
-    }
-    
-    .content-section {
-        max-width: 100%;
-    }
-}
-
-@@media (max-width: 768px) {
-    .dashboard-page {
-        padding: 1rem 0.5rem;
-    }
-    
-    .dashboard-container {
-        border-radius: 16px;
-    }
-    
-    .dashboard-header,
-    .tab-content {
-        padding: 1.5rem;
-    }
-    
-    .dashboard-tabs {
-        padding: 1rem 1.5rem 0;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
-    
-    .tab-btn {
-        flex: 1 1 calc(50% - 0.375rem);
-        min-width: 140px;
-        font-size: 0.9rem;
-        padding: 0.75rem 1rem;
-        justify-content: center;
-    }
-    
-    .header-content {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1.5rem;
-    }
-    
-    .header-left {
-        width: 100%;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-    
-    .header-right {
-        width: 100%;
-    }
-    
-    .back-link {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .dashboard-title {
-        font-size: 1.5rem;
-    }
-    
-    .code-badge {
-        font-size: 0.9rem;
-    }
-    
-    .modal-content {
-        padding: 1.5rem;
-        width: 95%;
-        margin: 5% auto;
-    }
-    
-    .note-textarea {
-        min-height: 350px;
-        padding: 1rem;
-        font-size: 0.95rem;
-    }
-    
-    .note-footer {
-        padding: 0.6rem 1rem;
-    }
-    
-    .btn-save-note {
-        width: 100%;
-        justify-content: center;
-        padding: 1rem 1.5rem;
-    }
-    
-    .file-input-display {
-        padding: 2rem 1.5rem;
-    }
-    
-    .file-input-display .file-icon {
-        font-size: 2.5rem;
-    }
-    
-    .btn-upload,
-    .btn-load-files {
-        padding: 1rem 1.25rem;
-    }
-    
-    .upload-card {
-        padding: 1.5rem;
-    }
-    
-    .security-card {
-        padding: 1.25rem;
-    }
-    
-    .danger-zone {
-        padding: 1.25rem;
-    }
-    
-    .form-input {
-        font-size: 1rem;
-        padding: 0.875rem 1rem;
-    }
-}
-
-@@media (max-width: 640px) {
-    .dashboard-tabs {
-        padding: 0.75rem 1rem 0;
-    }
-    
-    .tab-btn {
-        flex: 1 1 100%;
-        font-size: 0.95rem;
-        padding: 0.875rem 1rem;
-    }
-    
-    .tab-icon {
-        font-size: 1.2rem;
-    }
-}
-
-@@media (max-width: 480px) {
-    .dashboard-page {
-        padding: 0.5rem;
-    }
-    
-    .dashboard-container {
-        border-radius: 12px;
-    }
-    
-    .dashboard-header {
-        padding: 1.25rem;
-    }
-    
-    .tab-content {
-        padding: 1.25rem;
-    }
-    
-    .dashboard-title {
-        font-size: 1.35rem;
-    }
-    
-    .section-title {
-        font-size: 1.15rem;
-    }
-    
-    .note-textarea {
-        min-height: 300px;
-        padding: 0.875rem;
-        font-size: 0.9rem;
-    }
-    
-    .file-input-display {
-        padding: 1.5rem 1rem;
-    }
-    
-    .file-input-display .file-icon {
-        font-size: 2rem;
-    }
-    
-    .file-input-display .file-text {
-        font-size: 1rem;
-    }
-    
-    .upload-card {
-        padding: 1.25rem;
-    }
-    
-    .upload-info {
-        padding: 0.875rem 1rem;
-    }
-    
-    .info-text,
-    .warning-text {
-        font-size: 0.85rem;
-    }
-    
-    .btn-upload,
-    .btn-load-files,
-    .btn-save-note {
-        font-size: 0.95rem;
-        padding: 0.875rem 1.25rem;
-    }
-    
-    .modal-content {
-        width: 98%;
-        padding: 1.25rem;
-        margin: 2% auto;
-    }
-    
-    .modal-title {
-        font-size: 1.25rem;
-    }
-    
-    .modal-close {
-        font-size: 1.75rem;
-        top: 0.75rem;
-        right: 1rem;
-    }
-}
-</style>
-}
-

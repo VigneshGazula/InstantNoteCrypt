@@ -7,18 +7,8 @@ using ShareItems_WebApp.Settings;
 using SixLabors.ImageSharp;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Get connection string
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION")
                        ?? builder.Configuration.GetConnectionString("DefaultConnectionString");
-
-if (string.IsNullOrEmpty(connectionString))
-{
-    throw new InvalidOperationException(
-        "Database connection string not found. " +
-        "Please set 'DefaultConnectionString' in appsettings.json or 'DB_CONNECTION' environment variable.");
-}
-
 builder.Services.AddDbContext<UserContext>(options => options.UseSqlServer(connectionString));
 
 // Configure Cloudinary settings
