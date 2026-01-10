@@ -533,7 +533,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Vignesh Gazula**
 
 - GitHub: [@VigneshGazula](https://github.com/VigneshGazula)
-- Repository: [InstantNoteCrypt](https://github.com/VigneshGazula/InstantNoteCrypt)
+- Repository: [CodeSafe](https://github.com/VigneshGazula/CodeSafe)
 
 ---
 
