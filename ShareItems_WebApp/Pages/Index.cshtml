@@ -5,11 +5,13 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
+<div class="page-wrapper">
+<!-- CodeSafe Box - First Section -->
 <div class="index-container">
     <div class="index-glass-card">
         <!-- App Branding -->
         <div class="index-header">
-            <h1 class="index-title">🔒 CodeSafe</h1>
+            <h1 class="index-title">CodeSafe</h1>
             <p class="index-subtitle">Secure. Simple. Encrypted.</p>
         </div>
 
@@ -58,9 +60,10 @@
             </p>
         </div>
     </div>
+</div>
 
-    <!-- About Section -->
-    <div class="about-section">
+<!-- About Section - Second Section -->
+<div class="about-section">
         <div class="about-card">
             <h2 class="about-title">🛡️ What is CodeSafe?</h2>
             <p class="about-text">
@@ -138,12 +141,17 @@
    INDEX PAGE SPECIFIC STYLES
    =================================== */
 
-.index-container {
+.page-wrapper {
     min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.index-container {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    min-height: 100vh;
 }
 
 .index-glass-card {
@@ -327,8 +335,13 @@
 
 /* Responsive */
 @@media (max-width: 768px) {
+    .page-wrapper {
+        padding: 1rem 0;
+    }
+
     .index-container {
         padding: 1.5rem;
+        min-height: auto;
     }
 
     .index-glass-card {
@@ -365,8 +378,8 @@
 
 .about-section {
     max-width: 900px;
-    margin: 3rem auto 2rem;
-    padding: 0 2rem;
+    margin: 0 auto 2rem;
+    padding: 0 2rem 2rem;
     display: flex;
     flex-direction: column;
     gap: 2rem;
@@ -528,8 +541,7 @@
 /* Responsive for About Section */
 @@media (max-width: 768px) {
     .about-section {
-        padding: 0 1.5rem;
-        margin: 2rem auto 1.5rem;
+        padding: 0 1.5rem 1.5rem;
     }
 
     .about-card,
@@ -559,7 +571,7 @@
 
 @@media (max-width: 480px) {
     .about-section {
-        padding: 0 1rem;
+        padding: 0 1rem 1rem;
     }
 
     .about-card,
