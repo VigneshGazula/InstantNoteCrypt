@@ -142,19 +142,6 @@ ZIP, RAR, 7Z, TAR, GZ, PSD, AI, Figma, Blend, OBJ, STL, LOG, DAT
 
 ---
 
-## 🚀 Demo
-
-### Home Page
-![Home Page](https://via.placeholder.com/800x400?text=CodeSafe+Home+Page)
-
-### Dashboard
-![Dashboard](https://via.placeholder.com/800x400?text=CodeSafe+Dashboard)
-
-### PIN Protection
-![PIN Verification](https://via.placeholder.com/800x400?text=PIN+Verification)
-
----
-
 ## 💻 Tech Stack
 
 ### Backend
