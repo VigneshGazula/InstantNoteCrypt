@@ -1,16 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShareItems_WebApp.Services;
+using ShareItems_WebApp.Helpers;
 
 namespace ShareItems_WebApp.Pages
 {
     public class VerifyPinModel : PageModel
     {
         private readonly INoteService _noteService;
+        private readonly NoteAuthorizationHelper _authHelper;
 
-        public VerifyPinModel(INoteService noteService)
+        public VerifyPinModel(INoteService noteService, NoteAuthorizationHelper authHelper)
         {
             _noteService = noteService;
+            _authHelper = authHelper;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -73,8 +76,12 @@ namespace ShareItems_WebApp.Pages
                 return Page();
             }
 
+            // PIN is valid - mark as verified in session
+            _authHelper.MarkPinAsVerified(Code);
+
             // PIN is valid, redirect to dashboard
             return RedirectToPage("/Dashboard", new { code = Code });
         }
     }
 }
+

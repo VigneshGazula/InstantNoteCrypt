@@ -2,7 +2,7 @@
 @model ShareItems_WebApp.Pages.IndexModel
 @{
     ViewData["Title"] = "CodeSafe - Secure Note Access";
-    Layout = "~/Shared/_Layout.cshtml";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
 <div class="index-container">
@@ -56,6 +56,78 @@
                 <span class="info-icon">🔐</span>
                 End-to-end encrypted. Zero knowledge architecture.
             </p>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="about-section">
+        <div class="about-card">
+            <h2 class="about-title">🛡️ What is CodeSafe?</h2>
+            <p class="about-text">
+                CodeSafe is a secure platform that allows you to store notes and files using a unique access code. 
+                All data is protected and can only be accessed by users who know the correct code. 
+                An optional PIN provides an additional layer of protection for sensitive content.
+            </p>
+            <p class="about-text">
+                The platform operates on a zero-knowledge architecture, meaning your data is encrypted and 
+                we do not require user accounts or track personal identity. Your privacy is our priority.
+            </p>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="use-cases-card">
+            <h3 class="use-cases-title">📌 Perfect For</h3>
+            <ul class="use-cases-list">
+                <li class="use-case-item">
+                    <span class="use-case-icon">💬</span>
+                    <div class="use-case-content">
+                        <strong>Temporary Secure Note Sharing</strong>
+                        <p>Share sensitive information with colleagues or friends without email or messaging apps</p>
+                    </div>
+                </li>
+                <li class="use-case-item">
+                    <span class="use-case-icon">📄</span>
+                    <div class="use-case-content">
+                        <strong>Personal Reference Documents</strong>
+                        <p>Store important documents, passwords, or notes you need to access from anywhere</p>
+                    </div>
+                </li>
+                <li class="use-case-item">
+                    <span class="use-case-icon">🔄</span>
+                    <div class="use-case-content">
+                        <strong>Secure File Transfer</strong>
+                        <p>Share files securely without size limitations from email providers</p>
+                    </div>
+                </li>
+                <li class="use-case-item">
+                    <span class="use-case-icon">🎯</span>
+                    <div class="use-case-content">
+                        <strong>Quick Access Storage</strong>
+                        <p>Store temporary data you need to access across different devices</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Privacy & Responsibility Notice -->
+        <div class="policy-card">
+            <h3 class="policy-title">⚠️ User Responsibility Notice</h3>
+            <div class="policy-content">
+                <p class="policy-text">
+                    <strong>You are solely responsible for the content you upload or store on this platform.</strong>
+                </p>
+                <p class="policy-text">
+                    The developers of this site do not access, monitor, or control user data and are not responsible 
+                    for any data loss or information leaks caused by user actions.
+                </p>
+                <p class="policy-text">
+                    Users are <strong>strongly advised to enable PIN protection</strong> when storing important or sensitive files.
+                </p>
+                <p class="policy-warning">
+                    <span class="warning-icon-large">🚫</span>
+                    Do not upload illegal, harmful, or confidential data that you are not authorized to store.
+                </p>
+            </div>
         </div>
     </div>
 </div>
@@ -286,5 +358,229 @@
         font-size: 1.75rem;
     }
 }
+
+/* ===================================
+   ABOUT & POLICY SECTIONS
+   =================================== */
+
+.about-section {
+    max-width: 900px;
+    margin: 3rem auto 2rem;
+    padding: 0 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.about-card,
+.use-cases-card,
+.policy-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-card);
+    padding: 2.5rem;
+    backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount));
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.about-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.about-text {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.about-text:last-child {
+    margin-bottom: 0;
+}
+
+/* Use Cases */
+.use-cases-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.use-cases-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.use-case-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.use-case-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(124, 124, 255, 0.3);
+    transform: translateX(5px);
+}
+
+.use-case-icon {
+    font-size: 1.75rem;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.use-case-content {
+    flex: 1;
+}
+
+.use-case-content strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+}
+
+.use-case-content p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Policy Card */
+.policy-card {
+    background: rgba(239, 68, 68, 0.05);
+    border: 2px solid rgba(239, 68, 68, 0.2);
+}
+
+.policy-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--error-color);
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.policy-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.policy-text {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.policy-text strong {
+    color: var(--text-primary);
+}
+
+.policy-warning {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    color: var(--error-color);
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.warning-icon-large {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+/* Animations */
+@@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive for About Section */
+@@media (max-width: 768px) {
+    .about-section {
+        padding: 0 1.5rem;
+        margin: 2rem auto 1.5rem;
+    }
+
+    .about-card,
+    .use-cases-card,
+    .policy-card {
+        padding: 2rem;
+    }
+
+    .about-title,
+    .use-cases-title,
+    .policy-title {
+        font-size: 1.35rem;
+    }
+
+    .use-case-icon {
+        font-size: 1.5rem;
+    }
+
+    .use-case-content strong {
+        font-size: 1rem;
+    }
+
+    .use-case-content p {
+        font-size: 0.9rem;
+    }
+}
+
+@@media (max-width: 480px) {
+    .about-section {
+        padding: 0 1rem;
+    }
+
+    .about-card,
+    .use-cases-card,
+    .policy-card {
+        padding: 1.5rem;
+    }
+
+    .use-case-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .use-case-icon {
+        margin: 0;
+    }
+
+    .warning-icon-large {
+        font-size: 1.5rem;
+    }
+}
 </style>
+
 

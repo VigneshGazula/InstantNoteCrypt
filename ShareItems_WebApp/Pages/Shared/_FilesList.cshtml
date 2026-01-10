@@ -30,12 +30,6 @@
                 </div>
                 
                 <div class="file-actions">
-                    <button type="button" 
-                            onclick="previewFile(@file.Id, '@file.FileType', '@file.FileName')" 
-                            class="file-action-btn preview-btn"
-                            title="Preview">
-                        <span>???</span>
-                    </button>
                     <a href="/Dashboard/@Model.Code?handler=Download&fileId=@file.Id" 
                        class="file-action-btn download-btn"
                        title="Download"
@@ -199,10 +193,6 @@ else
     background: rgba(255, 255, 255, 0.1);
     border-color: var(--accent-primary);
     transform: translateY(-2px);
-}
-
-.preview-btn:hover {
-    background: rgba(124, 124, 255, 0.2);
 }
 
 .download-btn:hover {

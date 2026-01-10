@@ -4,6 +4,7 @@ using Rotativa.AspNetCore;
 using ShareItems_WebApp.Entities;
 using ShareItems_WebApp.Services;
 using ShareItems_WebApp.Settings;
+using ShareItems_WebApp.Helpers;
 using SixLabors.ImageSharp;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,11 +16,23 @@ builder.Services.AddDbContext<UserContext>(options => options.UseSqlServer(conne
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings"));
 
+// Add session support for PIN verification
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
 // Register services
 builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<NoteAuthorizationHelper>();
 
 builder.Services.AddDataProtection();
 builder.Services.AddControllersWithViews();
@@ -32,6 +45,7 @@ var env = app.Services.GetRequiredService<IWebHostEnvironment>();
 
 app.UseRouting();
 app.UseStaticFiles();
+app.UseSession(); // Enable session middleware for PIN verification
 app.MapRazorPages();
 app.MapControllers();
 app.UseAuthorization();

@@ -10,11 +10,16 @@ namespace ShareItems_WebApp.Pages
     {
         private readonly INoteService _noteService;
         private readonly IFileStorageService _fileStorageService;
+        private readonly NoteAuthorizationHelper _authHelper;
 
-        public DashboardModel(INoteService noteService, IFileStorageService fileStorageService)
+        public DashboardModel(
+            INoteService noteService, 
+            IFileStorageService fileStorageService,
+            NoteAuthorizationHelper authHelper)
         {
             _noteService = noteService;
             _fileStorageService = fileStorageService;
+            _authHelper = authHelper;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -35,18 +40,19 @@ namespace ShareItems_WebApp.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
-            if (string.IsNullOrWhiteSpace(Code))
+            // CRITICAL: Enforce PIN protection
+            var authResult = await _authHelper.ValidateNoteAccessAsync(Code);
+            
+            if (!authResult.IsAuthorized)
             {
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = Code });
+                }
                 return RedirectToPage("/Index");
             }
 
-            var note = await _noteService.GetNoteByCodeAsync(Code);
-
-            if (note == null)
-            {
-                return RedirectToPage("/Index");
-            }
-
+            var note = authResult.Note!;
             NoteId = note.Id;
             NoteContent = note.Content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
@@ -56,14 +62,19 @@ namespace ShareItems_WebApp.Pages
 
         public async Task<IActionResult> OnPostSaveNoteAsync(string content)
         {
-            var note = await _noteService.GetNoteByCodeAsync(Code);
-
-            if (note == null)
+            // CRITICAL: Enforce PIN protection
+            var authResult = await _authHelper.ValidateNoteAccessAsync(Code);
+            
+            if (!authResult.IsAuthorized)
             {
-                ErrorMessage = "Note not found.";
-                return Page();
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = Code });
+                }
+                return RedirectToPage("/Index");
             }
 
+            var note = authResult.Note!;
             NoteId = note.Id;
             await _noteService.UpdateNoteContentAsync(note.Id, content ?? string.Empty);
             NoteContent = content;
@@ -81,14 +92,19 @@ namespace ShareItems_WebApp.Pages
 
         public async Task<IActionResult> OnPostUploadFileAsync(IFormFile file)
         {
-            var note = await _noteService.GetNoteByCodeAsync(Code);
-
-            if (note == null)
+            // CRITICAL: Enforce PIN protection
+            var authResult = await _authHelper.ValidateNoteAccessAsync(Code);
+            
+            if (!authResult.IsAuthorized)
             {
-                ErrorMessage = "Note not found.";
-                return Page();
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = Code });
+                }
+                return RedirectToPage("/Index");
             }
 
+            var note = authResult.Note!;
             NoteId = note.Id;
             NoteContent = note.Content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
@@ -168,14 +184,19 @@ namespace ShareItems_WebApp.Pages
 
         public async Task<IActionResult> OnPostLoadFilesAsync(string fileType)
         {
-            var note = await _noteService.GetNoteByCodeAsync(Code);
-
-            if (note == null)
+            // CRITICAL: Enforce PIN protection
+            var authResult = await _authHelper.ValidateNoteAccessAsync(Code);
+            
+            if (!authResult.IsAuthorized)
             {
-                ErrorMessage = "Note not found.";
-                return Page();
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = Code });
+                }
+                return RedirectToPage("/Index");
             }
 
+            var note = authResult.Note!;
             NoteId = note.Id;
             NoteContent = note.Content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
@@ -205,29 +226,53 @@ namespace ShareItems_WebApp.Pages
 
         public async Task<IActionResult> OnGetDownloadAsync(int fileId)
         {
+            // CRITICAL: Get file first to determine which note it belongs to
             var file = await _fileStorageService.GetFileByIdAsync(fileId);
 
             if (file == null)
             {
-                ErrorMessage = "File not found.";
-                return Page();
+                return RedirectToPage("/Index");
+            }
+
+            // Get the note for this file
+            var note = await _noteService.GetNoteByIdAsync(file.NoteId);
+            
+            if (note == null)
+            {
+                return RedirectToPage("/Index");
+            }
+
+            // CRITICAL: Enforce PIN protection using the note's code
+            var authResult = await _authHelper.ValidateNoteAccessAsync(note.Code);
+            
+            if (!authResult.IsAuthorized)
+            {
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = note.Code });
+                }
+                return RedirectToPage("/Index");
             }
 
             // Redirect to Cloudinary secure URL for download
-            // The file will be served directly from Cloudinary
             return Redirect(file.FileUrl);
         }
 
         public async Task<IActionResult> OnPostSetPinAsync(string pin, string confirmPin)
         {
-            var note = await _noteService.GetNoteByCodeAsync(Code);
-
-            if (note == null)
+            // CRITICAL: Enforce PIN protection
+            var authResult = await _authHelper.ValidateNoteAccessAsync(Code);
+            
+            if (!authResult.IsAuthorized)
             {
-                ErrorMessage = "Note not found.";
-                return Page();
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = Code });
+                }
+                return RedirectToPage("/Index");
             }
 
+            var note = authResult.Note!;
             NoteId = note.Id;
             NoteContent = note.Content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
@@ -255,6 +300,9 @@ namespace ShareItems_WebApp.Pages
                 await _noteService.SetNotePinAsync(note.Id, pin);
                 HasPin = true;
                 Message = "PIN set successfully. Note is now locked.";
+                
+                // Mark the new PIN as verified in session
+                _authHelper.MarkPinAsVerified(Code);
             }
             catch (Exception ex)
             {
@@ -269,14 +317,19 @@ namespace ShareItems_WebApp.Pages
 
         public async Task<IActionResult> OnPostRemovePinAsync(string removePin)
         {
-            var note = await _noteService.GetNoteByCodeAsync(Code);
-
-            if (note == null)
+            // CRITICAL: Enforce PIN protection
+            var authResult = await _authHelper.ValidateNoteAccessAsync(Code);
+            
+            if (!authResult.IsAuthorized)
             {
-                ErrorMessage = "Note not found.";
-                return Page();
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = Code });
+                }
+                return RedirectToPage("/Index");
             }
 
+            var note = authResult.Note!;
             NoteId = note.Id;
             NoteContent = note.Content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
@@ -300,6 +353,9 @@ namespace ShareItems_WebApp.Pages
                 await _noteService.RemoveNotePinAsync(note.Id);
                 HasPin = false;
                 Message = "PIN removed successfully. Note is now unlocked.";
+                
+                // Clear PIN verification from session
+                _authHelper.ClearPinVerification(Code);
             }
             catch (Exception ex)
             {
@@ -314,14 +370,19 @@ namespace ShareItems_WebApp.Pages
 
         public async Task<IActionResult> OnPostUpdatePinAsync(string currentPin, string newPin, string confirmNewPin)
         {
-            var note = await _noteService.GetNoteByCodeAsync(Code);
-
-            if (note == null)
+            // CRITICAL: Enforce PIN protection
+            var authResult = await _authHelper.ValidateNoteAccessAsync(Code);
+            
+            if (!authResult.IsAuthorized)
             {
-                ErrorMessage = "Note not found.";
-                return Page();
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = Code });
+                }
+                return RedirectToPage("/Index");
             }
 
+            var note = authResult.Note!;
             NoteId = note.Id;
             NoteContent = note.Content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
@@ -359,6 +420,9 @@ namespace ShareItems_WebApp.Pages
             {
                 await _noteService.SetNotePinAsync(note.Id, newPin);
                 Message = "PIN updated successfully.";
+                
+                // PIN is updated but session verification remains valid
+                _authHelper.MarkPinAsVerified(Code);
             }
             catch (Exception ex)
             {
@@ -373,14 +437,19 @@ namespace ShareItems_WebApp.Pages
 
         public async Task<IActionResult> OnPostDestroyNoteAsync(string? destroyPin)
         {
-            var note = await _noteService.GetNoteByCodeAsync(Code);
-
-            if (note == null)
+            // CRITICAL: Enforce PIN protection
+            var authResult = await _authHelper.ValidateNoteAccessAsync(Code);
+            
+            if (!authResult.IsAuthorized)
             {
-                ErrorMessage = "Note not found.";
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = Code });
+                }
                 return RedirectToPage("/Index");
             }
 
+            var note = authResult.Note!;
             NoteId = note.Id;
             NoteContent = note.Content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
@@ -409,6 +478,9 @@ namespace ShareItems_WebApp.Pages
 
                 if (deleted)
                 {
+                    // Clear session verification
+                    _authHelper.ClearPinVerification(Code);
+                    
                     TempData["Message"] = "Note and all associated files have been permanently deleted.";
                     return RedirectToPage("/Index");
                 }
@@ -427,14 +499,19 @@ namespace ShareItems_WebApp.Pages
 
         public async Task<IActionResult> OnPostDeleteFileAsync(int fileId)
         {
-            var note = await _noteService.GetNoteByCodeAsync(Code);
-
-            if (note == null)
+            // CRITICAL: Enforce PIN protection
+            var authResult = await _authHelper.ValidateNoteAccessAsync(Code);
+            
+            if (!authResult.IsAuthorized)
             {
-                ErrorMessage = "Note not found.";
-                return Page();
+                if (authResult.NeedsPinVerification)
+                {
+                    return RedirectToPage("/VerifyPin", new { code = Code });
+                }
+                return RedirectToPage("/Index");
             }
 
+            var note = authResult.Note!;
             NoteId = note.Id;
             NoteContent = note.Content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
@@ -476,4 +553,5 @@ namespace ShareItems_WebApp.Pages
         }
     }
 }
+
 
