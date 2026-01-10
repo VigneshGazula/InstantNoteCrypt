@@ -23,6 +23,9 @@ namespace ShareItems_WebApp.Pages
         [BindProperty]
         public string? CurrentFileType { get; set; }
 
+        [BindProperty]
+        public string? ActiveTab { get; set; }
+
         public string? NoteContent { get; set; }
         public int NoteId { get; set; }
         public bool HasPin { get; set; }
@@ -66,6 +69,12 @@ namespace ShareItems_WebApp.Pages
             NoteContent = content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
             Message = "Note saved successfully.";
+
+            // Preserve active tab (defaults to notes if not specified)
+            if (string.IsNullOrEmpty(ActiveTab))
+            {
+                ActiveTab = "notes";
+            }
 
             return Page();
         }
@@ -118,6 +127,19 @@ namespace ShareItems_WebApp.Pages
             {
                 await _fileStorageService.SaveFileAsync(note.Id, file, detectedFileType, Code);
                 Message = $"File uploaded successfully as {detectedFileType}.";
+                CurrentFileType = detectedFileType;
+                
+                // Set active tab based on file type
+                ActiveTab = detectedFileType switch
+                {
+                    "document" => "documents",
+                    "image" => "photos",
+                    "video" => "videos",
+                    _ => "others"
+                };
+                
+                // Load files for the current type
+                Files = await _fileStorageService.GetFilesByNoteIdAndTypeAsync(note.Id, detectedFileType);
             }
             catch (TaskCanceledException)
             {
@@ -158,6 +180,16 @@ namespace ShareItems_WebApp.Pages
             NoteContent = note.Content;
             HasPin = !string.IsNullOrWhiteSpace(note.Pin);
             CurrentFileType = fileType;
+
+            // Set active tab based on file type
+            ActiveTab = fileType switch
+            {
+                "document" => "documents",
+                "image" => "photos",
+                "video" => "videos",
+                "others" => "others",
+                _ => "notes"
+            };
 
             if (string.IsNullOrWhiteSpace(fileType))
             {
@@ -229,6 +261,9 @@ namespace ShareItems_WebApp.Pages
                 ErrorMessage = $"Failed to set PIN: {ex.Message}";
             }
 
+            // Stay on security tab
+            ActiveTab = "security";
+
             return Page();
         }
 
@@ -270,6 +305,9 @@ namespace ShareItems_WebApp.Pages
             {
                 ErrorMessage = $"Failed to remove PIN: {ex.Message}";
             }
+
+            // Stay on security tab
+            ActiveTab = "security";
 
             return Page();
         }
@@ -326,6 +364,9 @@ namespace ShareItems_WebApp.Pages
             {
                 ErrorMessage = $"Failed to update PIN: {ex.Message}";
             }
+
+            // Stay on security tab
+            ActiveTab = "security";
 
             return Page();
         }
@@ -420,6 +461,15 @@ namespace ShareItems_WebApp.Pages
             if (!string.IsNullOrWhiteSpace(CurrentFileType))
             {
                 Files = await _fileStorageService.GetFilesByNoteIdAndTypeAsync(note.Id, CurrentFileType);
+                
+                // Set active tab based on current file type
+                ActiveTab = CurrentFileType switch
+                {
+                    "document" => "documents",
+                    "image" => "photos",
+                    "video" => "videos",
+                    _ => "others"
+                };
             }
 
             return Page();

@@ -1,31 +1,196 @@
-@page "/VerifyPin/{code}"
+﻿@page "/VerifyPin/{code}"
 @model ShareItems_WebApp.Pages.VerifyPinModel
 @{
-    ViewData["Title"] = "Verify PIN";
+    ViewData["Title"] = "Verify PIN - CodeSafe";
+    Layout = "~/Shared/_Layout.cshtml";
 }
 
-<h1>?? Note is Locked</h1>
-<h2>Code: @Model.Code</h2>
+<div class="verify-container">
+    <div class="verify-glass-card">
+        <!-- Header -->
+        <div class="verify-header">
+            <div class="lock-icon">🔒</div>
+            <h1 class="verify-title">Note is Locked</h1>
+            <p class="verify-code">Code: <span class="code-highlight">@Model.Code</span></p>
+        </div>
 
-<p>This note is protected with a PIN. Please enter the PIN to access it.</p>
+        <!-- Description -->
+        <p class="verify-description">
+            This note is protected with a PIN. Please enter the PIN to access it.
+        </p>
 
-@if (!string.IsNullOrEmpty(Model.ErrorMessage))
-{
-    <p style="color: red;">@Model.ErrorMessage</p>
-}
+        <!-- Error Message -->
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-error">
+                <span>⚠</span> @Model.ErrorMessage
+            </div>
+        }
 
-<form method="post">
-    <div>
-        <label for="pin">Enter PIN:</label>
-        <input type="password" id="pin" name="pin" required autofocus />
+        <!-- PIN Form -->
+        <form method="post" class="verify-form">
+            <div class="form-group">
+                <label for="pin" class="form-label">Enter PIN</label>
+                <input 
+                    type="password" 
+                    id="pin" 
+                    name="pin" 
+                    class="form-input"
+                    placeholder="Enter your PIN"
+                    required 
+                    autofocus 
+                    autocomplete="off" />
+            </div>
+            
+            <button type="submit" class="btn-primary unlock-btn">
+                <span>🔓</span>
+                <span>Unlock Note</span>
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <div class="verify-footer">
+            <a href="/" class="back-link">
+                <span>←</span>
+                <span>Go Back to Home</span>
+            </a>
+        </div>
     </div>
-    <div>
-        <button type="submit">Unlock</button>
-    </div>
-</form>
-
-<hr />
-
-<div>
-    <a href="/">? Go Back to Home</a>
 </div>
+
+<style>
+/* Verify PIN Page Styles */
+.verify-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.verify-glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-card);
+    padding: 3rem;
+    max-width: 480px;
+    width: 100%;
+    backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount));
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.verify-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.lock-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+.verify-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+}
+
+.verify-code {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.code-highlight {
+    color: var(--accent-primary);
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    background: rgba(124, 124, 255, 0.1);
+    border-radius: 6px;
+}
+
+.verify-description {
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+.verify-form {
+    margin-bottom: 2rem;
+}
+
+.unlock-btn {
+    width: 100%;
+    font-size: 1.05rem;
+}
+
+.verify-footer {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.back-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    transition: all var(--transition-smooth);
+}
+
+.back-link:hover {
+    color: var(--accent-primary);
+}
+
+.back-link span:first-child {
+    font-size: 1.2rem;
+}
+
+/* Responsive */
+@@media (max-width: 768px) {
+    .verify-glass-card {
+        padding: 2rem;
+    }
+
+    .verify-title {
+        font-size: 1.75rem;
+    }
+}
+
+@@media (max-width: 480px) {
+    .verify-container {
+        padding: 1rem;
+    }
+
+    .verify-glass-card {
+        padding: 1.5rem;
+    }
+
+    .lock-icon {
+        font-size: 3rem;
+    }
+
+    .verify-title {
+        font-size: 1.5rem;
+    }
+}
+</style>
